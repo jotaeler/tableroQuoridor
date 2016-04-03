@@ -20,8 +20,12 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
+import jade.proto.ContractNetInitiator;
 import jade.proto.ProposeInitiator;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Vector;
+import juegoQuoridor.utils.Casilla;
 import ontologiaConsola.MensajeEnConsola;
 
 /**
@@ -43,8 +47,17 @@ public class AgenteTablero extends Agent {
     //La ontologia utilizada por el agente
     private Ontology ontology;
 
+    private Casilla[][] tablero = new Casilla[9][9];
+
     @Override
     protected void setup() {
+        //Creo la matriz de casillas del tablero
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                tablero[i][j] = new Casilla(i, j);
+            }
+        }
+
         interfazTablero = new GUItablero(this);
         interfazTablero.setVisible(true);
         //Inicialización de variables
@@ -129,6 +142,75 @@ public class AgenteTablero extends Agent {
             }
 
             //Buscar agentes jugadores
+            template = new DFAgentDescription();
+            sd = new ServiceDescription();
+            sd.setName(juegoQuoridor.OntologiaQuoridor.REGISTRO_JUGADOR);
+            template.addServices(sd);
+
+            try {
+                result = DFService.search(myAgent, template);
+                if (result.length > 0) {
+                    agentesJugador = new AID[result.length];
+                    for (int i = 0; i < result.length; ++i) {
+                        agentesJugador[i] = result[i].getName();
+                    }
+                } else {
+                    //No se han encontrado agentes jugador
+                    agentesJugador = null;
+                }
+            } catch (FIPAException fe) {
+                fe.printStackTrace();
+            }
+        }
+    }
+
+    private class ProponerPartida extends ContractNetInitiator {
+
+        public ProponerPartida(Agent agente, ACLMessage plantilla) {
+            super(agente, plantilla);
+        }
+
+        //Manejador de proposiciones.
+        protected void handlePropose(ACLMessage propuesta, Vector aceptadas) {
+
+        }
+
+        //Manejador de rechazos de proposiciones.
+        protected void handleRefuse(ACLMessage rechazo) {
+
+        }
+
+        //Manejador de respuestas de fallo.
+        protected void handleFailure(ACLMessage fallo) {
+
+        }
+
+        //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
+        protected void handleAllResponses(Vector respuestas, Vector aceptados) {
+            // Evaluate proposals.
+            int bestProposal = -1;
+            AID bestProposer = null;
+            ACLMessage accept = null;
+            Enumeration e = respuestas.elements();
+            while (e.hasMoreElements()) {
+                ACLMessage msg = (ACLMessage) e.nextElement();
+                if (msg.getPerformative() == ACLMessage.PROPOSE) {
+                    ACLMessage reply = msg.createReply();
+                    reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                    aceptados.addElement(reply);
+                    int proposal = Integer.parseInt(msg.getContent());
+                    if (proposal > bestProposal) {
+                        bestProposal = proposal;
+                        bestProposer = msg.getSender();
+                        accept = reply;
+                    }
+                }
+            }
+        }
+
+        //Manejador de los mensajes inform.
+        protected void handleInform(ACLMessage inform) {
+
         }
     }
 
@@ -139,9 +221,6 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
-    
-    
-    
     /**
      * ******************************************************************
      *
