@@ -5,6 +5,7 @@
  */
 package juegoQuoridor.GUI;
 
+import java.awt.Button;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.GridBagLayout;
@@ -23,8 +24,10 @@ import juegoQuoridor.agentes.AgenteTablero;
  * @author Hacker
  */
 public class GUItablero extends JFrame {
+
     private final AgenteTablero myAgent;
     JPanel panel = new JPanel();
+    JPanel panel2=new JPanel();
     JLabel labels[][] = new JLabel[17][17];
     GridBagLayout grid;
 
@@ -37,25 +40,24 @@ public class GUItablero extends JFrame {
         String path = "tablero.png";
         URL url = this.getClass().getResource(path);
         ImageIcon casilla = new ImageIcon(url);
-        
+
         path = "separacion-vertical.png";
         url = this.getClass().getResource(path);
         ImageIcon separacionV = new ImageIcon(url);
-        
+
         path = "separacion-horizontal.png";
         url = this.getClass().getResource(path);
         ImageIcon separacionH = new ImageIcon(url);
-        
-        
+
         for (int i = 0; i < 17; i++) {
             if (i % 2 != 0) {
                 for (int j = 0; j < 17; j++) {
                     JLabel label;
                     if (j % 2 == 0) {
-                        label=new JLabel(separacionV);
+                        label = new JLabel(separacionV);
                         label.setText("");
                     } else {
-                        label=new JLabel();
+                        label = new JLabel();
                         label.setText("");
                     }
                     labels[i][j] = label;
@@ -69,9 +71,9 @@ public class GUItablero extends JFrame {
                 for (int j = 0; j < 17; j++) {
                     JLabel label;
                     if (j % 2 == 0) {
-                        label=new JLabel(casilla);
+                        label = new JLabel(casilla);
                     } else {
-                        label=new JLabel(separacionH);
+                        label = new JLabel(separacionH);
                     }
                     labels[i][j] = label;
                     //labels[i][j].setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -85,18 +87,23 @@ public class GUItablero extends JFrame {
         }
 
     }
+    
+    public void addUserElements(){
+        panel2.add(new Button("Iniciar partia"));
+    }
 
     public GUItablero(AgenteTablero _agente) {
-        myAgent=_agente;
-        
+        myAgent = _agente;
+
         grid = new GridBagLayout();
-        setSize(800, 800);
+        setSize(800, 700);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         addComponentsToPane(getContentPane());
-
+        addUserElements();
         add(panel);
+        //add(panel2);
         setVisible(true);
     }
 }

@@ -5,7 +5,6 @@
  */
 package juegoQuoridor.agentes;
 
-import juegoQuoridor.GUI.GUItablero;
 import jade.content.ContentManager;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -24,8 +23,12 @@ import jade.proto.ContractNetInitiator;
 import jade.proto.ProposeInitiator;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.Vector;
+import juegoQuoridor.GUI.GUI;
+import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
+import juegosTablero.elementos.Partida;
 import ontologiaConsola.MensajeEnConsola;
 
 /**
@@ -34,7 +37,7 @@ import ontologiaConsola.MensajeEnConsola;
  */
 public class AgenteTablero extends Agent {
 
-    private GUItablero interfazTablero;
+    private GUI interfazTablero;
 
     private AID[] agentesConsola;
     private AID[] agentesJugador;
@@ -48,6 +51,9 @@ public class AgenteTablero extends Agent {
     private Ontology ontology;
 
     private Casilla[][] tablero = new Casilla[9][9];
+    private Partida partidaActual=null;
+    
+    private LinkedList<MovimientoRealizado> movimientosRealizados;
 
     @Override
     protected void setup() {
@@ -57,8 +63,8 @@ public class AgenteTablero extends Agent {
                 tablero[i][j] = new Casilla(i, j);
             }
         }
-
-        interfazTablero = new GUItablero(this);
+        movimientosRealizados=new LinkedList<MovimientoRealizado>();
+        interfazTablero = new GUI(manager);
         interfazTablero.setVisible(true);
         //Inicialización de variables
         mensajesPendientes = new ArrayList();
@@ -154,6 +160,9 @@ public class AgenteTablero extends Agent {
                     for (int i = 0; i < result.length; ++i) {
                         agentesJugador[i] = result[i].getName();
                     }
+//                    if(agentesJugador.length > 1 && partidaActual==null){
+//                        
+//                    }
                 } else {
                     //No se han encontrado agentes jugador
                     agentesJugador = null;
@@ -221,6 +230,28 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
+    
+    /**
+     * Este método es invocado por la interfaz Quoridor.
+     * Las tareas de este agente serán:
+     * 1- Comprobar si hay agentes Jugador en la estructura correspondiente
+     * 2- Crear el contractNet ProponerPartida a los agentes jugador
+     */
+    public void empezarPartida(int _nJugadores){
+        
+        
+        addBehaviour(new TickerBehaviour(this, 3000) {
+            @Override
+            protected void onTick() {
+                //Elimina el movimiento de la lista
+                interfazTablero.representarMovimiento(movimientosRealizados.pop());
+            }
+        });
+    }
+    
+    
+    
+    
     /**
      * ******************************************************************
      *
