@@ -28,7 +28,7 @@ import java.util.Vector;
 import juegoQuoridor.GUI.GUI;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
-import juegosTablero.elementos.Partida;
+import juegoQuoridor.utils.PartidaActiva;
 import ontologiaConsola.MensajeEnConsola;
 
 /**
@@ -51,7 +51,7 @@ public class AgenteTablero extends Agent {
     private Ontology ontology;
 
     private Casilla[][] tablero = new Casilla[9][9];
-    private Partida partidaActual=null;
+    private PartidaActiva partidaActual=null;
     
     private LinkedList<MovimientoRealizado> movimientosRealizados;
 
@@ -244,7 +244,8 @@ public class AgenteTablero extends Agent {
             @Override
             protected void onTick() {
                 //Elimina el movimiento de la lista
-                interfazTablero.representarMovimiento(movimientosRealizados.pop());
+                MovimientoRealizado m=movimientosRealizados.pop();
+                interfazTablero.representarMovimiento(m,partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
             }
         });
     }

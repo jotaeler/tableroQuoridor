@@ -5,6 +5,8 @@
  */
 package juegoQuoridor.utils;
 
+import juegosTablero.elementos.Jugador;
+
 /**
  *
  * @author Hacker
@@ -14,6 +16,7 @@ public class Casilla {
     private int y;
     private boolean muroDerecha=false;
     private boolean muroAbajo=false;
+    private Jugador jugador;
     
     public Casilla(int _x, int _y){
         x=_x;
@@ -61,4 +64,19 @@ public class Casilla {
     public void setMuroAbajo(boolean muroAbajo) {
         this.muroAbajo = muroAbajo;
     }
+
+    /**
+     * @return the jugador
+     */
+    public Jugador getJugador() {
+        return jugador;
+    }
+
+    /**
+     * @param jugador the jugador to set
+     */
+    public void setJugador(Jugador jugador) {
+        this.jugador = jugador;
+    }
+    
 }

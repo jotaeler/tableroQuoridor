@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.elementos.Muro;
+import juegoQuoridor.utils.Casilla;
 import juegosTablero.elementos.Ficha;
 import juegosTablero.elementos.Jugador;
 import juegosTablero.elementos.Posicion;
@@ -38,7 +39,7 @@ public class GUI extends javax.swing.JFrame {
         initComponents();
         addComponentsToPane();
         add(panelTablero);
-        manager=_manager;
+        manager = _manager;
     }
 
     public void addComponentsToPane() {
@@ -179,26 +180,62 @@ public class GUI extends javax.swing.JFrame {
 //            }
 //        });
 //    }
-    
-    
-    public void representarMovimiento(MovimientoRealizado _m){
-        try{
-            Movimiento mov=_m.getMovimiento();
-            Jugador jugador=_m.getJugador();
-            Ficha ficha=jugador.getFicha();
-            Posicion pos=mov.getPosicion();
-            Object elementoJuego=mov.getElementoJuego();
-            
-            if(elementoJuego instanceof Muro){
-                //Si es un muro, poner el muro
-            }else{
-                //Es un movimiento normal
+    public void representarMovimiento(MovimientoRealizado _m, Casilla _posAnterior) {
+        try {
+            Movimiento mov = _m.getMovimiento();
+            Jugador jugador = _m.getJugador();
+            Ficha ficha = jugador.getFicha();
+            Posicion pos = mov.getPosicion();
+            Object elementoJuego = mov.getElementoJuego();
+
+            if (elementoJuego instanceof Muro) {
+                if (elementoJuego != null) {
+                    if (((Muro) (elementoJuego)).getAlineacion() == juegoQuoridor.OntologiaQuoridor.ALINEACION_HORIZONTAL) {
+                        String path = "muro-horizontal.png";
+                        URL url = this.getClass().getResource(path);
+                        ImageIcon muro = new ImageIcon(url);
+                        labels[pos.getCoorX() * 2][(pos.getCoorY() * 2) + 1].setIcon(muro);
+                        labels[(pos.getCoorX() * 2) + 2][(pos.getCoorY() * 2) + 1].setIcon(muro);
+                    } else {
+                        //Vertical
+                        String path = "muro-vertical.png";
+                        URL url = this.getClass().getResource(path);
+                        ImageIcon muro = new ImageIcon(url);
+                        labels[(pos.getCoorX() * 2) + 1][(pos.getCoorY() * 2)].setIcon(muro);
+                        labels[(pos.getCoorX() * 2) + 1][(pos.getCoorY() * 2) + 2].setIcon(muro);
+                    }
+                }
+            } else {//Es un movimiento normal
+                URL url = null;
+                String path = null;
+                if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
+                    path = "ficha-rojo.png";
+
+                } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
+                    path = "ficha-azul.png";
+
+                } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
+                    path = "ficha-verde.png";
+
+                } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
+                    path = "ficha-negro.png";
+                    
+                }
+                url = this.getClass().getResource(path);
+                ImageIcon imgFicha = new ImageIcon(url);
+                labels[pos.getCoorX() * 2][pos.getCoorY() * 2].setIcon(imgFicha);
+                
+                //Cambio la imagen de la posicion anterior que tenia la ficha por una vacia
+                path = "tablero.png";
+                url = this.getClass().getResource(path);
+                ImageIcon casilla = new ImageIcon(url);
+                labels[_posAnterior.getX() * 2][_posAnterior.getY()* 2].setIcon(casilla);
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel panelTablero;
     // End of variables declaration//GEN-END:variables
