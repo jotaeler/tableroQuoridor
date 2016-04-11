@@ -23,9 +23,9 @@ public class PartidaActiva {
     private ArrayList<Jugador> jugadores;
     private LinkedList<Ficha> fichasDisponibles;
     private int turno=0;
-
+    
     public PartidaActiva(Partida _partida){
-        
+        posJugador=new ArrayList<Casilla>();
         partida=_partida;
         
         fichasDisponibles=new LinkedList<Ficha>();
@@ -79,11 +79,12 @@ public class PartidaActiva {
         return jugadores;
     }
     
-    public Partida getPartida(){
-        return partida;
-    }
     
     public Ficha getSiguienteFicha(){
         return fichasDisponibles.pollFirst();
+    }
+
+    public Partida getPartida(){
+        return partida;
     }
 }

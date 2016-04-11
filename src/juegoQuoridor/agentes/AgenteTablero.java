@@ -25,13 +25,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import jade.content.onto.basic.Action;
 import java.util.Vector;
 import juegoQuoridor.GUI.GUI;
+import juegoQuoridor.elementos.JugarPartida;
+import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
 import juegoQuoridor.utils.PartidaActiva;
+
 import juegosTablero.elementos.Partida;
 import juegosTablero.elementos.Tablero;
+
+import juegosTablero.elementos.Ficha;
+import juegosTablero.elementos.Jugador;
 import ontologiaConsola.MensajeEnConsola;
 
 /**
@@ -200,15 +207,15 @@ public class AgenteTablero extends Agent {
         //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
         protected void handleAllResponses(Vector respuestas, Vector aceptados) {
             // Evaluate proposals.
-            int nJugadoresDeseados=partidaActual.getPartida().getNumeroJugadores();
-            int proposes=0;
+            int nJugadoresDeseados = partidaActual.getPartida().getNumeroJugadores();
+            int proposes = 0;
             ACLMessage accept = null;
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
-                if (msg.getPerformative() == ACLMessage.PROPOSE && proposes<nJugadoresDeseados) {
+                if (msg.getPerformative() == ACLMessage.PROPOSE && proposes < nJugadoresDeseados) {
                     proposes++;
-                    
+
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     aceptados.addElement(reply);
@@ -222,6 +229,41 @@ public class AgenteTablero extends Agent {
         }
     }
 
+    private class EnvioJugarPartida extends ProposeInitiator {
+
+        public EnvioJugarPartida(Agent agente, ACLMessage plantilla) {
+            super(agente, plantilla);
+        }
+
+        protected void handleAcceptProposal(ACLMessage aceptacion) {
+
+        }
+
+        protected void handleRejectProposal(ACLMessage rechazo) {
+
+        }
+
+        protected void handleAllResponse(Vector respuestas, Vector aceptados) {
+            int jugadoresAc = 0;
+            Enumeration e = respuestas.elements();
+            while (e.hasMoreElements()) {
+                ACLMessage msg = (ACLMessage) e.nextElement();
+                if (msg.getPerformative() == ACLMessage.PROPOSE) {
+                    ACLMessage reply = msg.createReply();
+                    if (reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+                        aceptados.add(reply);
+                        //Comprobar Si ha ganado la partida
+                        Jugador jugador = new Jugador();
+                        Movimiento movimiento = new Movimiento();
+                        MovimientoRealizado mr = new MovimientoRealizado(jugador, movimiento);
+                        movimientosRealizados.add(mr);  //Paso movimiento al tablero
+                        reset();
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * ******************************************************************
      *
@@ -229,6 +271,34 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
+    /**
+     * /*
+     * Método jugar partida
+     */
+    public void jugarPartida() {
+        ACLMessage mensaje = null;
+        if (agentesConsola != null) {
+            if (!mensajesPendientes.isEmpty()) {
+                try {
+                    mensaje = new ACLMessage(ACLMessage.PROPOSE);
+                    mensaje.setLanguage(codec.getName());
+                    mensaje.setOntology(ontology.getName());
+                    mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+                    mensaje.setSender(this.getAID());
+                    mensaje.addReceiver(agentesConsola[0]);
+                    Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
+                    JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), movimientosRealizados.pop().getMovimiento(), jugadorActivo);
+                    manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+
+            }
+        }
+        addBehaviour(new EnvioJugarPartida(this, mensaje));
+    }
+
     /**
      * Este método es invocado por la interfaz Quoridor. Las tareas de este
      * agente serán: 1- Comprobar si hay agentes Jugador en la estructura
@@ -249,9 +319,9 @@ public class AgenteTablero extends Agent {
             for (int i = 0; i < _nJugadores; i++) {
                 mensajeCFP.addReceiver(agentesJugador[i]);
             }
-            Tablero t=new Tablero(9,9);
-            Partida p=new Partida("1", juegoQuoridor.OntologiaQuoridor.TIPO_JUEGO, _nJugadores, t);
-            partidaActual=new PartidaActiva(p);
+            Tablero t = new Tablero(9, 9);
+            Partida p = new Partida("1", juegoQuoridor.OntologiaQuoridor.TIPO_JUEGO, _nJugadores, t);
+            partidaActual = new PartidaActiva(p);
             addBehaviour(new ProponerPartida(this, mensajeCFP));
 
             addBehaviour(new TickerBehaviour(this, 3000) {
