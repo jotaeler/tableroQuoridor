@@ -24,11 +24,16 @@ import jade.proto.ProposeInitiator;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import jade.content.onto.basic.Action;
 import java.util.Vector;
 import juegoQuoridor.GUI.GUI;
+import juegoQuoridor.elementos.JugarPartida;
+import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
 import juegoQuoridor.utils.PartidaActiva;
+import juegosTablero.elementos.Ficha;
+import juegosTablero.elementos.Jugador;
 import ontologiaConsola.MensajeEnConsola;
 
 /**
@@ -51,8 +56,8 @@ public class AgenteTablero extends Agent {
     private Ontology ontology;
 
     private Casilla[][] tablero = new Casilla[9][9];
-    private PartidaActiva partidaActual=null;
-    
+    private PartidaActiva partidaActual = null;
+
     private LinkedList<MovimientoRealizado> movimientosRealizados;
 
     @Override
@@ -63,7 +68,7 @@ public class AgenteTablero extends Agent {
                 tablero[i][j] = new Casilla(i, j);
             }
         }
-        movimientosRealizados=new LinkedList<MovimientoRealizado>();
+        movimientosRealizados = new LinkedList<MovimientoRealizado>();
         interfazTablero = new GUI(manager);
         interfazTablero.setVisible(true);
         //Inicialización de variables
@@ -223,6 +228,41 @@ public class AgenteTablero extends Agent {
         }
     }
 
+    private class EnvioJugarPartida extends ProposeInitiator {
+
+        public EnvioJugarPartida(Agent agente, ACLMessage plantilla) {
+            super(agente, plantilla);
+        }
+
+        protected void handleAcceptProposal(ACLMessage aceptacion) {
+
+        }
+
+        protected void handleRejectProposal(ACLMessage rechazo) {
+
+        }
+
+        protected void handleAllResponse(Vector respuestas, Vector aceptados) {
+            int jugadoresAc = 0;
+            Enumeration e = respuestas.elements();
+            while (e.hasMoreElements()) {
+                ACLMessage msg = (ACLMessage) e.nextElement();
+                if (msg.getPerformative() == ACLMessage.PROPOSE) {
+                    ACLMessage reply = msg.createReply();
+                    if (reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+                        aceptados.add(reply);
+                        //Comprobar Si ha ganado la partida
+                        Jugador jugador = new Jugador();
+                        Movimiento movimiento = new Movimiento();
+                        MovimientoRealizado mr = new MovimientoRealizado(jugador, movimiento);
+                        movimientosRealizados.add(mr);  //Paso movimiento al tablero
+                        reset();
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * ******************************************************************
      *
@@ -230,29 +270,51 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
-    
     /**
-     * Este método es invocado por la interfaz Quoridor.
-     * Las tareas de este agente serán:
-     * 1- Comprobar si hay agentes Jugador en la estructura correspondiente
-     * 2- Crear el contractNet ProponerPartida a los agentes jugador
+     * Método jugar partida
      */
-    public void empezarPartida(int _nJugadores){
-        
-        
+    public void jugarPartida() {
+        ACLMessage mensaje = null;
+        if (agentesConsola != null) {
+            if (!mensajesPendientes.isEmpty()) {
+                try {
+                    mensaje = new ACLMessage(ACLMessage.PROPOSE);
+                    mensaje.setLanguage(codec.getName());
+                    mensaje.setOntology(ontology.getName());
+                    mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+                    mensaje.setSender(this.getAID());
+                    mensaje.addReceiver(agentesConsola[0]);
+                    Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
+                    JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartidaActual(), movimientosRealizados.pop().getMovimiento(), jugadorActivo);
+                    manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+
+            }
+        }
+        addBehaviour(new EnvioJugarPartida(this, mensaje));
+    }
+
+    /**
+     * Este método es invocado por la interfaz Quoridor. Las tareas de este
+     * agente serán: 1- Comprobar si hay agentes Jugador en la estructura
+     * correspondiente 2- Crear el contractNet ProponerPartida a los agentes
+     * jugador
+     */
+    public void empezarPartida(int _nJugadores) {
+
         addBehaviour(new TickerBehaviour(this, 3000) {
             @Override
             protected void onTick() {
                 //Elimina el movimiento de la lista
-                MovimientoRealizado m=movimientosRealizados.pop();
-                interfazTablero.representarMovimiento(m,partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
+                MovimientoRealizado m = movimientosRealizados.pop();
+                interfazTablero.representarMovimiento(m, partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
             }
         });
     }
-    
-    
-    
-    
+
     /**
      * ******************************************************************
      *

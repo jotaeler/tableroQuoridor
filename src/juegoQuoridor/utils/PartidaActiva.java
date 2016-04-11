@@ -18,7 +18,7 @@ public class PartidaActiva {
     
     private Partida partida;
     private ArrayList<Casilla> posJugador;
-
+    
     public PartidaActiva(Partida _partida, ArrayList<Jugador> _jugadores){
         posJugador=new ArrayList<Casilla>();
         partida=_partida;
@@ -51,6 +51,10 @@ public class PartidaActiva {
             }
         }
         return r;
+    }
+    
+    public Partida getPartidaActual(){
+        return partida;
     }
     
 }
