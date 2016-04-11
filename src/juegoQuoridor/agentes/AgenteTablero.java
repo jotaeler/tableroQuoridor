@@ -22,6 +22,7 @@ import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import jade.proto.ProposeInitiator;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.Vector;
@@ -29,6 +30,8 @@ import juegoQuoridor.GUI.GUI;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
 import juegoQuoridor.utils.PartidaActiva;
+import juegosTablero.elementos.Partida;
+import juegosTablero.elementos.Tablero;
 import ontologiaConsola.MensajeEnConsola;
 
 /**
@@ -51,8 +54,8 @@ public class AgenteTablero extends Agent {
     private Ontology ontology;
 
     private Casilla[][] tablero = new Casilla[9][9];
-    private PartidaActiva partidaActual=null;
-    
+    private PartidaActiva partidaActual = null;
+
     private LinkedList<MovimientoRealizado> movimientosRealizados;
 
     @Override
@@ -63,7 +66,7 @@ public class AgenteTablero extends Agent {
                 tablero[i][j] = new Casilla(i, j);
             }
         }
-        movimientosRealizados=new LinkedList<MovimientoRealizado>();
+        movimientosRealizados = new LinkedList<MovimientoRealizado>();
         interfazTablero = new GUI(manager);
         interfazTablero.setVisible(true);
         //Inicialización de variables
@@ -197,22 +200,18 @@ public class AgenteTablero extends Agent {
         //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
         protected void handleAllResponses(Vector respuestas, Vector aceptados) {
             // Evaluate proposals.
-            int bestProposal = -1;
-            AID bestProposer = null;
+            int nJugadoresDeseados=partidaActual.getPartida().getNumeroJugadores();
+            int proposes=0;
             ACLMessage accept = null;
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
-                if (msg.getPerformative() == ACLMessage.PROPOSE) {
+                if (msg.getPerformative() == ACLMessage.PROPOSE && proposes<nJugadoresDeseados) {
+                    proposes++;
+                    
                     ACLMessage reply = msg.createReply();
-                    reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                    reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     aceptados.addElement(reply);
-                    int proposal = Integer.parseInt(msg.getContent());
-                    if (proposal > bestProposal) {
-                        bestProposal = proposal;
-                        bestProposer = msg.getSender();
-                        accept = reply;
-                    }
                 }
             }
         }
@@ -230,29 +229,42 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
-    
     /**
-     * Este método es invocado por la interfaz Quoridor.
-     * Las tareas de este agente serán:
-     * 1- Comprobar si hay agentes Jugador en la estructura correspondiente
-     * 2- Crear el contractNet ProponerPartida a los agentes jugador
+     * Este método es invocado por la interfaz Quoridor. Las tareas de este
+     * agente serán: 1- Comprobar si hay agentes Jugador en la estructura
+     * correspondiente 2- Crear el contractNet ProponerPartida a los agentes
+     * jugador
      */
-    public void empezarPartida(int _nJugadores){
-        
-        
-        addBehaviour(new TickerBehaviour(this, 3000) {
-            @Override
-            protected void onTick() {
-                //Elimina el movimiento de la lista
-                MovimientoRealizado m=movimientosRealizados.pop();
-                interfazTablero.representarMovimiento(m,partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
+    public void empezarPartida(int _nJugadores) {
+
+        ACLMessage mensajeCFP = new ACLMessage(ACLMessage.CFP);
+        mensajeCFP.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
+        mensajeCFP.setLanguage(codec.getName());
+        mensajeCFP.setOntology(ontology.getName());
+        mensajeCFP.setSender(getAID());
+        //Time Out 1 seg
+        mensajeCFP.setReplyByDate(new Date(System.currentTimeMillis() + 1000));
+
+        if (agentesJugador.length >= _nJugadores) {
+            for (int i = 0; i < _nJugadores; i++) {
+                mensajeCFP.addReceiver(agentesJugador[i]);
             }
-        });
+            Tablero t=new Tablero(9,9);
+            Partida p=new Partida("1", juegoQuoridor.OntologiaQuoridor.TIPO_JUEGO, _nJugadores, t);
+            partidaActual=new PartidaActiva(p);
+            addBehaviour(new ProponerPartida(this, mensajeCFP));
+
+            addBehaviour(new TickerBehaviour(this, 3000) {
+                @Override
+                protected void onTick() {
+                    //Elimina el movimiento de la lista
+                    MovimientoRealizado m = movimientosRealizados.pop();
+                    interfazTablero.representarMovimiento(m, partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
+                }
+            });
+        }
     }
-    
-    
-    
-    
+
     /**
      * ******************************************************************
      *

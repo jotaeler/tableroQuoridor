@@ -7,6 +7,8 @@ package juegoQuoridor.utils;
 
 import jade.core.AID;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import juegosTablero.elementos.Ficha;
 import juegosTablero.elementos.Jugador;
 import juegosTablero.elementos.Partida;
 
@@ -18,11 +20,26 @@ public class PartidaActiva {
     
     private Partida partida;
     private ArrayList<Casilla> posJugador;
+    private ArrayList<Jugador> jugadores;
+    private LinkedList<Ficha> fichasDisponibles;
+    private int turno=0;
 
-    public PartidaActiva(Partida _partida, ArrayList<Jugador> _jugadores){
-        posJugador=new ArrayList<Casilla>();
+    public PartidaActiva(Partida _partida){
+        
         partida=_partida;
+        
+        fichasDisponibles=new LinkedList<Ficha>();
+        fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1));
+        fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2));
+        fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3));
+        fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4));
+        
+    }
+    
+    public void setJugadores(ArrayList<Jugador> _jugadores, ArrayList<Casilla> _posJugador){
+        posJugador.addAll(_posJugador);
         for (Jugador _jugador : _jugadores) {
+            jugadores.add(_jugador);
             if(_jugador.getFicha().getColor()==juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1){
                 Casilla  c=new Casilla(4, 0);
                 c.setJugador(_jugador);
@@ -53,4 +70,20 @@ public class PartidaActiva {
         return r;
     }
     
+    public Jugador getSiguienteTurno(){
+        turno++;
+        return posJugador.get(turno).getJugador();
+    }
+    
+    public ArrayList<Jugador> getJugadores(){
+        return jugadores;
+    }
+    
+    public Partida getPartida(){
+        return partida;
+    }
+    
+    public Ficha getSiguienteFicha(){
+        return fichasDisponibles.pollFirst();
+    }
 }
