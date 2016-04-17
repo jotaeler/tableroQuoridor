@@ -28,16 +28,18 @@ import java.util.LinkedList;
 import jade.content.onto.basic.Action;
 import java.util.Vector;
 import juegoQuoridor.GUI.GUI;
+import juegoQuoridor.GUI.Quoridor;
+import juegoQuoridor.elementos.FichaEntregada;
 import juegoQuoridor.elementos.JugarPartida;
 import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
 import juegoQuoridor.utils.PartidaActiva;
+import juegosTablero.elementos.Ficha;
 
 import juegosTablero.elementos.Partida;
 import juegosTablero.elementos.Tablero;
 
-import juegosTablero.elementos.Ficha;
 import juegosTablero.elementos.Jugador;
 import ontologiaConsola.MensajeEnConsola;
 
@@ -48,11 +50,9 @@ import ontologiaConsola.MensajeEnConsola;
 public class AgenteTablero extends Agent {
 
     private GUI interfazTablero;
+    private Quoridor interfazInicio;
 
-    private AID[] agentesConsola;
     private AID[] agentesJugador;
-
-    private ArrayList<String> mensajesPendientes;
 
     private ContentManager manager = (ContentManager) getContentManager();
     //El lenguaje utilizado por el agente para la comunicacíon es SL
@@ -74,10 +74,9 @@ public class AgenteTablero extends Agent {
             }
         }
         movimientosRealizados = new LinkedList<MovimientoRealizado>();
-        interfazTablero = new GUI(manager);
-        interfazTablero.setVisible(true);
+        interfazInicio = new Quoridor(this);
+        interfazInicio.setVisible(true);
         //Inicialización de variables
-        mensajesPendientes = new ArrayList();
 
         try {
             ontology = juegoQuoridor.OntologiaQuoridor.getInstance();
@@ -106,7 +105,6 @@ public class AgenteTablero extends Agent {
 
         //Añadir las tareas principales
         addBehaviour(new BuscarAgentes(this, 5000));
-        addBehaviour(new EnvioConsolaTicker(this, 10000));
 
         //Creamos la plantilla a emplear, para solo recibir mensajes con el protocolo FIPA_PROPOSE y la performativa PROPOSE
         // MessageTemplate templatePropose = ProposeResponder.createMessageTemplate(FIPANames.InteractionProtocol.FIPA_PROPOSE);
@@ -136,27 +134,6 @@ public class AgenteTablero extends Agent {
             ServiceDescription sd;
             DFAgentDescription[] result;
 
-            //Busca agentes consola
-            template = new DFAgentDescription();
-            sd = new ServiceDescription();
-            sd.setName(ontologiaConsola.OntologiaPrimeraPractica.AGENTE_CONSOLA);
-            template.addServices(sd);
-
-            try {
-                result = DFService.search(myAgent, template);
-                if (result.length > 0) {
-                    agentesConsola = new AID[result.length];
-                    for (int i = 0; i < result.length; ++i) {
-                        agentesConsola[i] = result[i].getName();
-                    }
-                } else {
-                    //No se han encontrado agentes consola
-                    agentesConsola = null;
-                }
-            } catch (FIPAException fe) {
-                fe.printStackTrace();
-            }
-
             //Buscar agentes jugadores
             template = new DFAgentDescription();
             sd = new ServiceDescription();
@@ -170,9 +147,7 @@ public class AgenteTablero extends Agent {
                     for (int i = 0; i < result.length; ++i) {
                         agentesJugador[i] = result[i].getName();
                     }
-//                    if(agentesJugador.length > 1 && partidaActual==null){
-//                        
-//                    }
+
                 } else {
                     //No se han encontrado agentes jugador
                     agentesJugador = null;
@@ -189,38 +164,87 @@ public class AgenteTablero extends Agent {
             super(agente, plantilla);
         }
 
-        //Manejador de proposiciones.
-        protected void handlePropose(ACLMessage propuesta, Vector aceptadas) {
-
-        }
-
-        //Manejador de rechazos de proposiciones.
-        protected void handleRefuse(ACLMessage rechazo) {
-
-        }
-
-        //Manejador de respuestas de fallo.
-        protected void handleFailure(ACLMessage fallo) {
-
-        }
-
         //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
-        protected void handleAllResponses(Vector respuestas, Vector aceptados) {
+        protected void handleAllResponses(Vector respuestas, Vector responder) {
             // Evaluate proposals.
+            AID[] jugadoresAID=new AID[4];
+            ArrayList<Jugador> jugadores=new ArrayList<Jugador>();
             int nJugadoresDeseados = partidaActual.getPartida().getNumeroJugadores();
             int proposes = 0;
+            Vector aceptados= new Vector();
             ACLMessage accept = null;
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
+                
                 if (msg.getPerformative() == ACLMessage.PROPOSE && proposes < nJugadoresDeseados) {
                     proposes++;
 
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     aceptados.addElement(reply);
+                    jugadoresAID[proposes]=msg.getSender();
+                }else{
+                    ACLMessage reply = msg.createReply();
+                    reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                    responder.addElement(reply);
                 }
+                
             }
+            switch(proposes){
+                    case 0:
+                    //RELLENAR
+                        break;
+                    case 1:
+                        ((ACLMessage)aceptados.get(0)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                        responder.add(aceptados.get(0));
+                        break;
+                    case 2:
+                        
+                        for (int i=0;i<2;i++){
+                            try{
+                                Ficha f=partidaActual.getSiguienteFicha();
+                                manager.fillContent((ACLMessage)aceptados.get(i), new FichaEntregada(f));
+                                responder.add(aceptados.get(i));
+                                jugadores.add(new Jugador(jugadoresAID[i],f));
+                            }catch(Exception err){
+                                err.printStackTrace();
+                            }
+                        }
+                        partidaActual.setJugadores(jugadores);
+                         jugarPartida();
+                        break;
+                    case 3:
+                        for (int i=0;i<2;i++){
+                            try{
+                                Ficha f=partidaActual.getSiguienteFicha();
+                                manager.fillContent((ACLMessage)aceptados.get(i), new FichaEntregada(f));
+                                responder.add(aceptados.get(i));
+                                jugadores.add(new Jugador(jugadoresAID[i],f));
+                            }catch(Exception err){
+                                err.printStackTrace();
+                            }
+                        }
+                        ((ACLMessage)aceptados.get(2)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                        responder.add(aceptados.get(2));
+                        partidaActual.setJugadores(jugadores);
+                         jugarPartida();
+                        break;
+                    case 4:
+                        for (int i=0;i<4;i++){
+                            try{
+                                Ficha f=partidaActual.getSiguienteFicha();
+                                manager.fillContent((ACLMessage)aceptados.get(i), new FichaEntregada(f));
+                                responder.add(aceptados.get(i));
+                                jugadores.add(new Jugador(jugadoresAID[i],f));
+                            }catch(Exception err){
+                                err.printStackTrace();
+                            }
+                        }
+                        partidaActual.setJugadores(jugadores);
+                         jugarPartida();
+                        break;
+                }
         }
 
         //Manejador de los mensajes inform.
@@ -335,61 +359,5 @@ public class AgenteTablero extends Agent {
         }
     }
 
-    /**
-     * ******************************************************************
-     *
-     * Metodos para mostrar mensajes en la consola
-     *
-     ********************************************************************
-     */
-    private class EnvioConsola extends ProposeInitiator {
-
-        public EnvioConsola(Agent agente, ACLMessage mensaje) {
-            super(agente, mensaje);
-        }
-
-        //Manejar la respuesta en caso que acepte: ACCEPT_PROPOSAL
-        protected void handleAcceptProposal(ACLMessage aceptacion) {
-
-        }
-
-        //Manejar la respuesta en caso que rechace: REJECT_PROPOSAL
-        protected void handleRejectProposal(ACLMessage rechazo) {
-
-        }
-    }
-
-    public class EnvioConsolaTicker extends TickerBehaviour {
-
-        public EnvioConsolaTicker(Agent a, long period) {
-            super(a, period);
-        }
-
-        @Override
-        protected void onTick() {
-            ACLMessage mensaje;
-            if (agentesConsola != null) {
-                if (!mensajesPendientes.isEmpty()) {
-                    try {
-                        mensaje = new ACLMessage(ACLMessage.PROPOSE);
-                        mensaje.setLanguage(codec.getName());
-                        mensaje.setOntology(ontology.getName());
-                        mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
-                        mensaje.setSender(myAgent.getAID());
-                        mensaje.addReceiver(agentesConsola[0]);
-                        MensajeEnConsola m = new MensajeEnConsola(myAgent.getAID().getName(), mensajesPendientes.remove(0));
-                        manager.fillContent(mensaje, m);
-                        addBehaviour(new EnvioConsola(myAgent, mensaje));
-                        //myAgent.send(mensaje);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    //Si queremos hacer algo si no tenemos mensajes
-                    //pendientes para enviar a la consola
-                }
-            }
-        }
-    }
-
+    
 }
