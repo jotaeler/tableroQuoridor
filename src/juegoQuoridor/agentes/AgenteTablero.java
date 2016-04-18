@@ -5,6 +5,8 @@
  */
 package juegoQuoridor.agentes;
 
+import jade.content.Concept;
+import jade.content.ContentElement;
 import jade.content.ContentManager;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -37,7 +39,6 @@ import juegoQuoridor.utils.PartidaActiva;
 import juegosTablero.elementos.Partida;
 import juegosTablero.elementos.Tablero;
 
-import juegosTablero.elementos.Ficha;
 import juegosTablero.elementos.Jugador;
 import ontologiaConsola.MensajeEnConsola;
 
@@ -248,16 +249,17 @@ public class AgenteTablero extends Agent {
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
-                if (msg.getPerformative() == ACLMessage.PROPOSE) {
-                    ACLMessage reply = msg.createReply();
-                    if (reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
-                        aceptados.add(reply);
-                        //Comprobar Si ha ganado la partida
-                        Jugador jugador = new Jugador();
-                        Movimiento movimiento = new Movimiento();
-                        MovimientoRealizado mr = new MovimientoRealizado(jugador, movimiento);
+                ACLMessage reply = msg.createReply();
+                if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+                    aceptados.add(reply);
+                    //Comprobar Si ha ganado la partida --> Envio el inform suscribe
+                    try {
+                        MovimientoRealizado mensaje = (MovimientoRealizado) manager.extractContent(msg);
+                        MovimientoRealizado mr = new MovimientoRealizado(mensaje.getJugador(), mensaje.getMovimiento());
                         movimientosRealizados.add(mr);  //Paso movimiento al tablero
                         reset();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -277,6 +279,7 @@ public class AgenteTablero extends Agent {
      */
     public void jugarPartida() {
         ACLMessage mensaje = null;
+        ArrayList<Jugador> jugadores = new ArrayList<>();
         if (agentesConsola != null) {
             if (!mensajesPendientes.isEmpty()) {
                 try {
@@ -285,8 +288,14 @@ public class AgenteTablero extends Agent {
                     mensaje.setOntology(ontology.getName());
                     mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
                     mensaje.setSender(this.getAID());
-                    mensaje.addReceiver(agentesConsola[0]);
-                    Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
+
+                    //Envio el mensaje a todos los jugadores
+                    jugadores = partidaActual.getJugadores();
+                    for (int i = 0; i < jugadores.size(); i++) {
+                        mensaje.addReceiver(jugadores.get(i).getAgenteJugador());
+                    }
+//                  Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
+                    Jugador jugadorActivo = partidaActual.getSiguienteTurno();
                     JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), movimientosRealizados.pop().getMovimiento(), jugadorActivo);
                     manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
                 } catch (Exception e) {
