@@ -10,6 +10,7 @@ import java.awt.ComponentOrientation;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.net.URL;
+import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import juegoQuoridor.elementos.Movimiento;
@@ -205,7 +206,7 @@ public class GUI extends javax.swing.JFrame {
                         labels[(pos.getCoorX() * 2) + 1][(pos.getCoorY() * 2) + 2].setIcon(muro);
                     }
                 }
-            } else {//Es un movimiento normal
+            } else {//Es una Ficha
                 URL url = null;
                 String path = null;
                 if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
@@ -219,23 +220,43 @@ public class GUI extends javax.swing.JFrame {
 
                 } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
                     path = "ficha-negro.png";
-                    
+
                 }
                 url = this.getClass().getResource(path);
                 ImageIcon imgFicha = new ImageIcon(url);
                 labels[pos.getCoorX() * 2][pos.getCoorY() * 2].setIcon(imgFicha);
-                
+
                 //Cambio la imagen de la posicion anterior que tenia la ficha por una vacia
                 path = "tablero.png";
                 url = this.getClass().getResource(path);
                 ImageIcon casilla = new ImageIcon(url);
-                labels[_posAnterior.getX() * 2][_posAnterior.getY()* 2].setIcon(casilla);
+                labels[_posAnterior.getX() * 2][_posAnterior.getY() * 2].setIcon(casilla);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public void cargaFichas(ArrayList<Casilla> _c) {
+        URL url = null;
+        String path = null;
+        ImageIcon imgFicha=null;
+        for(Casilla c:_c){
+            if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)){
+                path = "ficha-rojo.png";
+            }else if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)){
+                path = "ficha-azul.png";
+            }else if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3)){
+                path = "ficha-verde.png";
+            }else if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4)){
+                path = "ficha-negro.png";
+            }
+            
+            url = this.getClass().getResource(path);
+            imgFicha = new ImageIcon(url);
+            labels[c.getX()*2][c.getY()*2].setIcon(imgFicha);
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel panelTablero;
     // End of variables declaration//GEN-END:variables

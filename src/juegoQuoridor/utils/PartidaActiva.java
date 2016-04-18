@@ -58,15 +58,15 @@ public class PartidaActiva {
                     c.setJugador(_jugador);
                     posJugador.add(c);
                 } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
-                    Casilla c = new Casilla(4, 8);
+                    Casilla c = new Casilla(8, 4);
                     c.setJugador(_jugador);
                     posJugador.add(c);
                 } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
-                    Casilla c = new Casilla(0, 4);
+                    Casilla c = new Casilla(4, 8);
                     c.setJugador(_jugador);
                     posJugador.add(c);
                 } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
-                    Casilla c = new Casilla(8, 4);
+                    Casilla c = new Casilla(0, 4);
                     c.setJugador(_jugador);
                     posJugador.add(c);
                 }
