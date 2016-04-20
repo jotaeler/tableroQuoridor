@@ -98,6 +98,7 @@ public class AgenteTablero extends Agent {
             sd.setName("The Fellowship of the Agent");
             dfd.addServices(sd);
             DFService.register(this, dfd);
+            sd.addLanguages(FIPANames.ContentLanguage.FIPA_SL);
 
             // Los agentes que quieran comunicarse deben conocer la ontolgía "Juego Quoridor"
             sd.addOntologies(juegoQuoridor.OntologiaQuoridor.ONTOLOGY_NAME);
@@ -169,84 +170,84 @@ public class AgenteTablero extends Agent {
         //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
         protected void handleAllResponses(Vector respuestas, Vector responder) {
             // Evaluate proposals.
-            AID[] jugadoresAID=new AID[4];
-            ArrayList<Jugador> jugadores=new ArrayList<Jugador>();
+            AID[] jugadoresAID = new AID[4];
+            ArrayList<Jugador> jugadores = new ArrayList<Jugador>();
             int nJugadoresDeseados = partidaActual.getPartida().getNumeroJugadores();
             int proposes = 0;
-            Vector aceptados= new Vector();
+            Vector aceptados = new Vector();
             ACLMessage accept = null;
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
-                
+
                 if (msg.getPerformative() == ACLMessage.PROPOSE && proposes < nJugadoresDeseados) {
                     proposes++;
 
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     aceptados.addElement(reply);
-                    jugadoresAID[proposes]=msg.getSender();
-                }else{
+                    jugadoresAID[proposes] = msg.getSender();
+                } else {
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                     responder.addElement(reply);
                 }
-                
+
             }
-            switch(proposes){
-                    case 0:
+            switch (proposes) {
+                case 0:
                     //RELLENAR
-                        break;
-                    case 1:
-                        ((ACLMessage)aceptados.get(0)).setPerformative(ACLMessage.REJECT_PROPOSAL);
-                        responder.add(aceptados.get(0));
-                        break;
-                    case 2:
-                        
-                        for (int i=0;i<2;i++){
-                            try{
-                                Ficha f=partidaActual.getSiguienteFicha();
-                                manager.fillContent((ACLMessage)aceptados.get(i), new FichaEntregada(f));
-                                responder.add(aceptados.get(i));
-                                jugadores.add(new Jugador(jugadoresAID[i],f));
-                            }catch(Exception err){
-                                err.printStackTrace();
-                            }
+                    break;
+                case 1:
+                    ((ACLMessage) aceptados.get(0)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                    responder.add(aceptados.get(0));
+                    break;
+                case 2:
+
+                    for (int i = 0; i < 2; i++) {
+                        try {
+                            Ficha f = partidaActual.getSiguienteFicha();
+                            manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
+                            responder.add(aceptados.get(i));
+                            jugadores.add(new Jugador(jugadoresAID[i], f));
+                        } catch (Exception err) {
+                            err.printStackTrace();
                         }
-                        partidaActual.setJugadores(jugadores);
-                         jugarPartida();
-                        break;
-                    case 3:
-                        for (int i=0;i<2;i++){
-                            try{
-                                Ficha f=partidaActual.getSiguienteFicha();
-                                manager.fillContent((ACLMessage)aceptados.get(i), new FichaEntregada(f));
-                                responder.add(aceptados.get(i));
-                                jugadores.add(new Jugador(jugadoresAID[i],f));
-                            }catch(Exception err){
-                                err.printStackTrace();
-                            }
+                    }
+                    partidaActual.setJugadores(jugadores);
+                    jugarPartida();
+                    break;
+                case 3:
+                    for (int i = 0; i < 2; i++) {
+                        try {
+                            Ficha f = partidaActual.getSiguienteFicha();
+                            manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
+                            responder.add(aceptados.get(i));
+                            jugadores.add(new Jugador(jugadoresAID[i], f));
+                        } catch (Exception err) {
+                            err.printStackTrace();
                         }
-                        ((ACLMessage)aceptados.get(2)).setPerformative(ACLMessage.REJECT_PROPOSAL);
-                        responder.add(aceptados.get(2));
-                        partidaActual.setJugadores(jugadores);
-                         jugarPartida();
-                        break;
-                    case 4:
-                        for (int i=0;i<4;i++){
-                            try{
-                                Ficha f=partidaActual.getSiguienteFicha();
-                                manager.fillContent((ACLMessage)aceptados.get(i), new FichaEntregada(f));
-                                responder.add(aceptados.get(i));
-                                jugadores.add(new Jugador(jugadoresAID[i],f));
-                            }catch(Exception err){
-                                err.printStackTrace();
-                            }
+                    }
+                    ((ACLMessage) aceptados.get(2)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                    responder.add(aceptados.get(2));
+                    partidaActual.setJugadores(jugadores);
+                    jugarPartida();
+                    break;
+                case 4:
+                    for (int i = 0; i < 4; i++) {
+                        try {
+                            Ficha f = partidaActual.getSiguienteFicha();
+                            manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
+                            responder.add(aceptados.get(i));
+                            jugadores.add(new Jugador(jugadoresAID[i], f));
+                        } catch (Exception err) {
+                            err.printStackTrace();
                         }
-                        partidaActual.setJugadores(jugadores);
-                         jugarPartida();
-                        break;
-                }
+                    }
+                    partidaActual.setJugadores(jugadores);
+                    jugarPartida();
+                    break;
+            }
         }
 
         //Manejador de los mensajes inform.
@@ -271,17 +272,44 @@ public class AgenteTablero extends Agent {
 
         protected void handleAllResponse(Vector respuestas, Vector aceptados) {
             int jugadoresAc = 0;
+            ACLMessage mensajeNuevo = null;
+            ArrayList<Jugador> jugadores = new ArrayList<>();      
+
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
                 ACLMessage reply = msg.createReply();
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
                     aceptados.add(reply);
+                    
                     //Comprobar Si ha ganado la partida --> Envio el inform suscribe
+                    
                     try {
-                        MovimientoRealizado mensaje = (MovimientoRealizado) manager.extractContent(msg);
-                        MovimientoRealizado mr = new MovimientoRealizado(mensaje.getJugador(), mensaje.getMovimiento());
-                        movimientosRealizados.add(mr);  //Paso movimiento al tablero
+                        //Nuevo mensaje con el movimiento realizado
+                        mensajeNuevo = new ACLMessage(ACLMessage.PROPOSE);
+                        mensajeNuevo.setLanguage(codec.getName());
+                        mensajeNuevo.setOntology(ontology.getName());
+                        mensajeNuevo.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+                        mensajeNuevo.setSender(getAID());
+
+                        //Envio el mensaje a todos los jugadores
+                        jugadores = partidaActual.getJugadores();
+                        for (int i = 0; i < jugadores.size(); i++) {
+                            mensajeNuevo.addReceiver(jugadores.get(i).getAgenteJugador());
+                        }
+
+                        MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
+                        MovimientoRealizado mr = new MovimientoRealizado(movimiento.getJugador(), movimiento.getMovimiento());
+
+                        Jugador jugadorActivo = partidaActual.getSiguienteTurno();
+                        Partida partida = partidaActual.getPartida();
+                        JugarPartida jugarpartida = new JugarPartida(partida, movimiento.getMovimiento(), jugadorActivo);
+                        manager.fillContent(mensajeNuevo, new Action(getAID(), jugarpartida));
+
+                        //Paso el movimiento al tablero
+                        movimientosRealizados.add(mr);
+
+                        //Reinicio el comportamiento
                         reset();
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -305,30 +333,24 @@ public class AgenteTablero extends Agent {
     public void jugarPartida() {
         ACLMessage mensaje = null;
         ArrayList<Jugador> jugadores = new ArrayList<>();
-        if (agentesConsola != null) {
-            if (!mensajesPendientes.isEmpty()) {
-                try {
-                    mensaje = new ACLMessage(ACLMessage.PROPOSE);
-                    mensaje.setLanguage(codec.getName());
-                    mensaje.setOntology(ontology.getName());
-                    mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
-                    mensaje.setSender(this.getAID());
+        try {
+            mensaje = new ACLMessage(ACLMessage.PROPOSE);
+            mensaje.setLanguage(codec.getName());
+            mensaje.setOntology(ontology.getName());
+            mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+            mensaje.setSender(this.getAID());
 
-                    //Envio el mensaje a todos los jugadores
-                    jugadores = partidaActual.getJugadores();
-                    for (int i = 0; i < jugadores.size(); i++) {
-                        mensaje.addReceiver(jugadores.get(i).getAgenteJugador());
-                    }
-//                  Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
-                    Jugador jugadorActivo = partidaActual.getSiguienteTurno();
-                    JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), movimientosRealizados.pop().getMovimiento(), jugadorActivo);
-                    manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-
+            //Envio el mensaje a todos los jugadores
+            jugadores = partidaActual.getJugadores();
+            for (int i = 0; i < jugadores.size(); i++) {
+                mensaje.addReceiver(jugadores.get(i).getAgenteJugador());
             }
+//                  Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
+            Jugador jugadorActivo = partidaActual.getSiguienteTurno();
+            JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), movimientosRealizados.pop().getMovimiento(), jugadorActivo);
+            manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         addBehaviour(new EnvioJugarPartida(this, mensaje));
     }
@@ -368,6 +390,4 @@ public class AgenteTablero extends Agent {
             });
         }
     }
-
-    
 }
