@@ -102,7 +102,7 @@ public class AgenteTablero extends Agent {
             sd.addLanguages(FIPANames.ContentLanguage.FIPA_SL);
 
             System.out.println("registrado en la plataforma");
-            
+
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
@@ -114,7 +114,6 @@ public class AgenteTablero extends Agent {
         // MessageTemplate templatePropose = ProposeResponder.createMessageTemplate(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         // Se añaden las tareas principales
         //   this.addBehaviour(new RecibirTurno(this, templatePropose));
-
     }
 
     /**
@@ -149,8 +148,8 @@ public class AgenteTablero extends Agent {
                 if (result.length > 0) {
                     agentesJugador = new AID[result.length];
                     for (int i = 0; i < result.length; ++i) {
-                        agentesJugador[i]=result[i].getName();
-                        System.out.println("Registrado nuevo agente: "+result[i].getName());
+                        agentesJugador[i] = result[i].getName();
+                        System.out.println("Registrado nuevo agente: " + result[i].getName());
                     }
 
                 } else {
@@ -275,24 +274,25 @@ public class AgenteTablero extends Agent {
         protected void handleAllResponse(Vector respuestas, Vector aceptados) {
             int jugadoresAc = 0;
             ACLMessage mensajeNuevo = null;
-            ArrayList<Jugador> jugadores = new ArrayList<>();      
+            ArrayList<Jugador> jugadores = new ArrayList<>();
 
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
+                System.out.println("Agente tablero - Dentro de e.hasMoreElements");
                 ACLMessage msg = (ACLMessage) e.nextElement();
                 ACLMessage reply = msg.createReply();
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+                    System.out.println("Agente tablero - He recibido un accept proposal");
                     aceptados.add(reply);
-                    
+
                     //Comprobar Si ha ganado la partida --> Envio el inform suscribe
-                    
                     try {
 
                         MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
-                        MovimientoRealizado mr = new MovimientoRealizado(movimiento.getJugador(), movimiento.getMovimiento());
-                        
+
                         //Paso el movimiento al tablero
-                        movimientosRealizados.add(mr);
+                        movimientosRealizados.addLast(movimiento);
+                        System.out.println("Agente tablero ha recibido un movmiento a "+movimiento.toString());
 
                         //Reinicio el comportamiento
                         //Nuevo mensaje con el movimiento realizado
@@ -332,10 +332,11 @@ public class AgenteTablero extends Agent {
      * Método jugar partida
      */
     public void jugarPartida() {
-        interfazTablero=new GUI(manager);
+        interfazTablero = new GUI(manager);
+        interfazTablero.cargaFichas(partidaActual.getPosJugador());
         interfazTablero.setVisible(true);
         ACLMessage mensaje = null;
-        ArrayList<Jugador> jugadores = new ArrayList<>();
+        ArrayList<Jugador> jugadores;
 
         try {
             mensaje = new ACLMessage(ACLMessage.PROPOSE);
@@ -346,6 +347,7 @@ public class AgenteTablero extends Agent {
 
             //Envio el mensaje a todos los jugadores
             jugadores = partidaActual.getJugadores();
+            System.out.println("Agente tablero jugarPartida - N jugadores="+jugadores.size());
             for (int i = 0; i < jugadores.size(); i++) {
                 mensaje.addReceiver(jugadores.get(i).getAgenteJugador());
             }
@@ -358,15 +360,17 @@ public class AgenteTablero extends Agent {
         }
 
         addBehaviour(new EnvioJugarPartida(this, mensaje));
-        
+
         addBehaviour(new TickerBehaviour(this, 3000) {
-                @Override
-                protected void onTick() {
-                    //Elimina el movimiento de la lista
+            @Override
+            protected void onTick() {
+                //Elimina el movimiento de la lista
+                if (movimientosRealizados.size() > 0) {
                     MovimientoRealizado m = movimientosRealizados.pop();
                     interfazTablero.representarMovimiento(m, partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
                 }
-            });
+            }
+        });
     }
 
     /**
@@ -392,16 +396,15 @@ public class AgenteTablero extends Agent {
             Tablero t = new Tablero(9, 9);
             Partida p = new Partida("1", juegoQuoridor.OntologiaQuoridor.TIPO_JUEGO, _nJugadores, t);
             partidaActual = new PartidaActiva(p);
-            ProponerPartida proponer=new ProponerPartida(p);
-            Action ac=new Action(getAID(),proponer);
-            try{
-            manager.fillContent(mensajeCFP, ac);
-            }catch(Exception e){
+            ProponerPartida proponer = new ProponerPartida(p);
+            Action ac = new Action(getAID(), proponer);
+            try {
+                manager.fillContent(mensajeCFP, ac);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             addBehaviour(new ProponerPartidaCN(this, mensajeCFP));
 
-            
         }
     }
 

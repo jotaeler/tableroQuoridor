@@ -191,7 +191,7 @@ public class GUI extends javax.swing.JFrame {
 
             if (elementoJuego instanceof Muro) {
                 if (elementoJuego != null) {
-                    if (((Muro) (elementoJuego)).getAlineacion() == juegoQuoridor.OntologiaQuoridor.ALINEACION_HORIZONTAL) {
+                    if (((Muro) (elementoJuego)).getAlineacion().equals(juegoQuoridor.OntologiaQuoridor.ALINEACION_HORIZONTAL)) {
                         String path = "muro-horizontal.png";
                         URL url = this.getClass().getResource(path);
                         ImageIcon muro = new ImageIcon(url);
@@ -209,18 +209,21 @@ public class GUI extends javax.swing.JFrame {
             } else {//Es una Ficha
                 URL url = null;
                 String path = null;
-                if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
-                    path = "ficha-rojo.png";
-
-                } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
-                    path = "ficha-azul.png";
-
-                } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
-                    path = "ficha-verde.png";
-
-                } else if (ficha.getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
-                    path = "ficha-negro.png";
-
+                switch (ficha.getColor()) {
+                    case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1:
+                        path = "ficha-rojo.png";
+                        break;
+                    case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2:
+                        path = "ficha-azul.png";
+                        break;
+                    case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3:
+                        path = "ficha-verde.png";
+                        break;
+                    case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4:
+                        path = "ficha-negro.png";
+                        break;
+                    default:
+                        break;
                 }
                 url = this.getClass().getResource(path);
                 ImageIcon imgFicha = new ImageIcon(url);
@@ -238,18 +241,25 @@ public class GUI extends javax.swing.JFrame {
     }
 
     public void cargaFichas(ArrayList<Casilla> _c) {
-        URL url = null;
+        URL url;
         String path = null;
-        ImageIcon imgFicha=null;
+        ImageIcon imgFicha;
         for(Casilla c:_c){
-            if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)){
-                path = "ficha-rojo.png";
-            }else if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)){
-                path = "ficha-azul.png";
-            }else if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3)){
-                path = "ficha-verde.png";
-            }else if(c.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4)){
-                path = "ficha-negro.png";
+            switch (c.getJugador().getFicha().getColor()) {
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1:
+                    path = "ficha-rojo.png";
+                    break;
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2:
+                    path = "ficha-azul.png";
+                    break;
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3:
+                    path = "ficha-verde.png";
+                    break;
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4:
+                    path = "ficha-negro.png";
+                    break;
+                default:
+                    break;
             }
             
             url = this.getClass().getResource(path);
