@@ -5,8 +5,6 @@
  */
 package juegoQuoridor.agentes;
 
-import jade.content.Concept;
-import jade.content.ContentElement;
 import jade.content.ContentManager;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -33,7 +31,6 @@ import juegoQuoridor.GUI.GUI;
 import juegoQuoridor.GUI.Quoridor;
 import juegoQuoridor.elementos.FichaEntregada;
 import juegoQuoridor.elementos.JugarPartida;
-import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
 import juegoQuoridor.utils.PartidaActiva;
@@ -43,7 +40,7 @@ import juegosTablero.elementos.Partida;
 import juegosTablero.elementos.Tablero;
 
 import juegosTablero.elementos.Jugador;
-import ontologiaConsola.MensajeEnConsola;
+import juegosTablero.elementos.ProponerPartida;
 
 /**
  *
@@ -54,8 +51,8 @@ public class AgenteTablero extends Agent {
     private GUI interfazTablero;
     private Quoridor interfazInicio;
 
-    //private AID[] agentesJugador;
-    private LinkedList<AID> agentesJugador=new LinkedList<AID>();
+    private AID[] agentesJugador;
+    //private LinkedList<AID> agentesJugador=new LinkedList<AID>();
 
     private ContentManager manager = (ContentManager) getContentManager();
     //El lenguaje utilizado por el agente para la comunicacíon es SL
@@ -97,24 +94,25 @@ public class AgenteTablero extends Agent {
             ServiceDescription sd = new ServiceDescription();
             sd.setType(juegoQuoridor.OntologiaQuoridor.REGISTRO_TABLERO);
             sd.setName("The Fellowship of the Agent Tablero");
+            // Los agentes que quieran comunicarse deben conocer la ontolgía "Juego Quoridor"
+            sd.addOntologies(juegoQuoridor.OntologiaQuoridor.ONTOLOGY_NAME);
+            sd.addLanguages(FIPANames.ContentLanguage.FIPA_SL);
             dfd.addServices(sd);
             DFService.register(this, dfd);
             System.out.println("registrado en la plataforma");
-            // Los agentes que quieran comunicarse deben conocer la ontolgía "Juego Quoridor"
-            sd.addOntologies(juegoQuoridor.OntologiaQuoridor.ONTOLOGY_NAME);
+            
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
 
         //Añadir las tareas principales
-        addBehaviour(new BuscarAgentes(this, 5000));
+        addBehaviour(new BuscarAgentes(this, 15000));
 
         //Creamos la plantilla a emplear, para solo recibir mensajes con el protocolo FIPA_PROPOSE y la performativa PROPOSE
         // MessageTemplate templatePropose = ProposeResponder.createMessageTemplate(FIPANames.InteractionProtocol.FIPA_PROPOSE);
-        // MessageTemplate templateContractNet = ContractNetResponder.createMessageTemplate(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
         // Se añaden las tareas principales
         //   this.addBehaviour(new RecibirTurno(this, templatePropose));
-        //  this.addBehaviour(new ApuntarsePartida(this, templateContractNet));
+
     }
 
     /**
@@ -140,15 +138,16 @@ public class AgenteTablero extends Agent {
             //Buscar agentes jugadores
             template = new DFAgentDescription();
             sd = new ServiceDescription();
-            sd.setName(juegoQuoridor.OntologiaQuoridor.REGISTRO_JUGADOR);
+            sd.setType(juegoQuoridor.OntologiaQuoridor.REGISTRO_JUGADOR);
             template.addServices(sd);
 
             try {
+                System.out.println("buscando agentes...");
                 result = DFService.search(myAgent, template);
                 if (result.length > 0) {
-                    //agentesJugador = new AID[result.length];
+                    agentesJugador = new AID[result.length];
                     for (int i = 0; i < result.length; ++i) {
-                        agentesJugador.add(result[i].getName());
+                        agentesJugador[i]=result[i].getName();
                         System.out.println("Registrado nuevo agente: "+result[i].getName());
                     }
 
@@ -162,9 +161,9 @@ public class AgenteTablero extends Agent {
         }
     }
 
-    private class ProponerPartida extends ContractNetInitiator {
+    private class ProponerPartidaCN extends ContractNetInitiator {
 
-        public ProponerPartida(Agent agente, ACLMessage plantilla) {
+        public ProponerPartidaCN(Agent agente, ACLMessage plantilla) {
             super(agente, plantilla);
         }
 
@@ -324,13 +323,22 @@ public class AgenteTablero extends Agent {
             }
 //                  Jugador jugadorActivo = partidaActual.getPosicionJugador(agentesJugador[0]).getJugador();
             Jugador jugadorActivo = partidaActual.getSiguienteTurno();
-            JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), movimientosRealizados.pop().getMovimiento(), jugadorActivo);
+            JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), null, jugadorActivo);
             manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         addBehaviour(new EnvioJugarPartida(this, mensaje));
+        
+        addBehaviour(new TickerBehaviour(this, 3000) {
+                @Override
+                protected void onTick() {
+                    //Elimina el movimiento de la lista
+                    MovimientoRealizado m = movimientosRealizados.pop();
+                    interfazTablero.representarMovimiento(m, partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
+                }
+            });
     }
 
     /**
@@ -349,23 +357,23 @@ public class AgenteTablero extends Agent {
         //Time Out 1 seg
         mensajeCFP.setReplyByDate(new Date(System.currentTimeMillis() + 1000));
 
-        if (agentesJugador.size() >= _nJugadores) {
+        if (agentesJugador.length >= _nJugadores) {
             for (int i = 0; i < _nJugadores; i++) {
-                mensajeCFP.addReceiver(agentesJugador.get(i));
+                mensajeCFP.addReceiver(agentesJugador[i]);
             }
             Tablero t = new Tablero(9, 9);
             Partida p = new Partida("1", juegoQuoridor.OntologiaQuoridor.TIPO_JUEGO, _nJugadores, t);
             partidaActual = new PartidaActiva(p);
-            addBehaviour(new ProponerPartida(this, mensajeCFP));
+            ProponerPartida proponer=new ProponerPartida(p);
+            Action ac=new Action(getAID(),proponer);
+            try{
+            manager.fillContent(mensajeCFP, ac);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            addBehaviour(new ProponerPartidaCN(this, mensajeCFP));
 
-            addBehaviour(new TickerBehaviour(this, 3000) {
-                @Override
-                protected void onTick() {
-                    //Elimina el movimiento de la lista
-                    MovimientoRealizado m = movimientosRealizados.pop();
-                    interfazTablero.representarMovimiento(m, partidaActual.getPosicionJugador(m.getJugador().getAgenteJugador()));
-                }
-            });
+            
         }
     }
 

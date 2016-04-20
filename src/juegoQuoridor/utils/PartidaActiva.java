@@ -27,6 +27,7 @@ public class PartidaActiva {
     public PartidaActiva(Partida _partida) {
         posJugador = new ArrayList<Casilla>();
         partida = _partida;
+        jugadores=new ArrayList<Jugador>();
 
         fichasDisponibles = new LinkedList<Ficha>();
         fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1));
@@ -38,13 +39,14 @@ public class PartidaActiva {
 
     public void setJugadores(ArrayList<Jugador> _jugadores) {
         if (_jugadores.size() == 2) {
+            System.out.println("PartidaActiva setJugadores - 2 jugadores");
             for (Jugador _jugador : _jugadores) {
                 jugadores.add(_jugador);
-                if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
+                if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)) {
                     Casilla c = new Casilla(4, 0);
                     c.setJugador(_jugador);
                     posJugador.add(c);
-                } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
+                } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)) {
                     Casilla c = new Casilla(4, 8);
                     c.setJugador(_jugador);
                     posJugador.add(c);
@@ -53,19 +55,19 @@ public class PartidaActiva {
         } else {
             for (Jugador _jugador : _jugadores) {
                 jugadores.add(_jugador);
-                if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
+                if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)) {
                     Casilla c = new Casilla(4, 0);
                     c.setJugador(_jugador);
                     posJugador.add(c);
-                } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
+                } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)) {
                     Casilla c = new Casilla(8, 4);
                     c.setJugador(_jugador);
                     posJugador.add(c);
-                } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
+                } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3)) {
                     Casilla c = new Casilla(4, 8);
                     c.setJugador(_jugador);
                     posJugador.add(c);
-                } else if (_jugador.getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
+                } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4)) {
                     Casilla c = new Casilla(0, 4);
                     c.setJugador(_jugador);
                     posJugador.add(c);
