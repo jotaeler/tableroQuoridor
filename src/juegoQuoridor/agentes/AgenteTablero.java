@@ -287,6 +287,14 @@ public class AgenteTablero extends Agent {
                     //Comprobar Si ha ganado la partida --> Envio el inform suscribe
                     
                     try {
+
+                        MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
+                        MovimientoRealizado mr = new MovimientoRealizado(movimiento.getJugador(), movimiento.getMovimiento());
+                        
+                        //Paso el movimiento al tablero
+                        movimientosRealizados.add(mr);
+
+                        //Reinicio el comportamiento
                         //Nuevo mensaje con el movimiento realizado
                         mensajeNuevo = new ACLMessage(ACLMessage.PROPOSE);
                         mensajeNuevo.setLanguage(codec.getName());
@@ -299,20 +307,11 @@ public class AgenteTablero extends Agent {
                         for (int i = 0; i < jugadores.size(); i++) {
                             mensajeNuevo.addReceiver(jugadores.get(i).getAgenteJugador());
                         }
-
-                        MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
-                        MovimientoRealizado mr = new MovimientoRealizado(movimiento.getJugador(), movimiento.getMovimiento());
-
                         Jugador jugadorActivo = partidaActual.getSiguienteTurno();
                         Partida partida = partidaActual.getPartida();
                         JugarPartida jugarpartida = new JugarPartida(partida, movimiento.getMovimiento(), jugadorActivo);
                         manager.fillContent(mensajeNuevo, new Action(getAID(), jugarpartida));
-
-                        //Paso el movimiento al tablero
-                        movimientosRealizados.add(mr);
-
-                        //Reinicio el comportamiento
-                        reset();
+                        reset(mensajeNuevo);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
