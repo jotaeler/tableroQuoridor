@@ -54,7 +54,8 @@ public class AgenteTablero extends Agent {
     private GUI interfazTablero;
     private Quoridor interfazInicio;
 
-    private AID[] agentesJugador;
+    //private AID[] agentesJugador;
+    private LinkedList<AID> agentesJugador=new LinkedList<AID>();
 
     private ContentManager manager = (ContentManager) getContentManager();
     //El lenguaje utilizado por el agente para la comunicacíon es SL
@@ -95,11 +96,12 @@ public class AgenteTablero extends Agent {
             dfd.setName(getAID());
             ServiceDescription sd = new ServiceDescription();
             sd.setType(juegoQuoridor.OntologiaQuoridor.REGISTRO_TABLERO);
-            sd.setName("The Fellowship of the Agent");
+            sd.setName("The Fellowship of the Agent Tablero");
             dfd.addServices(sd);
             DFService.register(this, dfd);
             sd.addLanguages(FIPANames.ContentLanguage.FIPA_SL);
 
+            System.out.println("registrado en la plataforma");
             // Los agentes que quieran comunicarse deben conocer la ontolgía "Juego Quoridor"
             sd.addOntologies(juegoQuoridor.OntologiaQuoridor.ONTOLOGY_NAME);
         } catch (FIPAException fe) {
@@ -146,9 +148,10 @@ public class AgenteTablero extends Agent {
             try {
                 result = DFService.search(myAgent, template);
                 if (result.length > 0) {
-                    agentesJugador = new AID[result.length];
+                    //agentesJugador = new AID[result.length];
                     for (int i = 0; i < result.length; ++i) {
-                        agentesJugador[i] = result[i].getName();
+                        agentesJugador.add(result[i].getName());
+                        System.out.println("Registrado nuevo agente: "+result[i].getName());
                     }
 
                 } else {
@@ -331,8 +334,11 @@ public class AgenteTablero extends Agent {
      * Método jugar partida
      */
     public void jugarPartida() {
+        interfazTablero=new GUI(manager);
+        interfazTablero.setVisible(true);
         ACLMessage mensaje = null;
         ArrayList<Jugador> jugadores = new ArrayList<>();
+
         try {
             mensaje = new ACLMessage(ACLMessage.PROPOSE);
             mensaje.setLanguage(codec.getName());
@@ -352,6 +358,7 @@ public class AgenteTablero extends Agent {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         addBehaviour(new EnvioJugarPartida(this, mensaje));
     }
 
@@ -371,9 +378,9 @@ public class AgenteTablero extends Agent {
         //Time Out 1 seg
         mensajeCFP.setReplyByDate(new Date(System.currentTimeMillis() + 1000));
 
-        if (agentesJugador.length >= _nJugadores) {
+        if (agentesJugador.size() >= _nJugadores) {
             for (int i = 0; i < _nJugadores; i++) {
-                mensajeCFP.addReceiver(agentesJugador[i]);
+                mensajeCFP.addReceiver(agentesJugador.get(i));
             }
             Tablero t = new Tablero(9, 9);
             Partida p = new Partida("1", juegoQuoridor.OntologiaQuoridor.TIPO_JUEGO, _nJugadores, t);
@@ -390,4 +397,5 @@ public class AgenteTablero extends Agent {
             });
         }
     }
+
 }
