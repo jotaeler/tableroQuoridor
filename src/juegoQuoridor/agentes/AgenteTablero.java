@@ -99,6 +99,8 @@ public class AgenteTablero extends Agent {
             sd.addLanguages(FIPANames.ContentLanguage.FIPA_SL);
             dfd.addServices(sd);
             DFService.register(this, dfd);
+            sd.addLanguages(FIPANames.ContentLanguage.FIPA_SL);
+
             System.out.println("registrado en la plataforma");
             
         } catch (FIPAException fe) {
@@ -272,17 +274,44 @@ public class AgenteTablero extends Agent {
 
         protected void handleAllResponse(Vector respuestas, Vector aceptados) {
             int jugadoresAc = 0;
+            ACLMessage mensajeNuevo = null;
+            ArrayList<Jugador> jugadores = new ArrayList<>();      
+
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
                 ACLMessage reply = msg.createReply();
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
                     aceptados.add(reply);
+                    
                     //Comprobar Si ha ganado la partida --> Envio el inform suscribe
+                    
                     try {
-                        MovimientoRealizado mensaje = (MovimientoRealizado) manager.extractContent(msg);
-                        MovimientoRealizado mr = new MovimientoRealizado(mensaje.getJugador(), mensaje.getMovimiento());
-                        movimientosRealizados.add(mr);  //Paso movimiento al tablero
+                        //Nuevo mensaje con el movimiento realizado
+                        mensajeNuevo = new ACLMessage(ACLMessage.PROPOSE);
+                        mensajeNuevo.setLanguage(codec.getName());
+                        mensajeNuevo.setOntology(ontology.getName());
+                        mensajeNuevo.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+                        mensajeNuevo.setSender(getAID());
+
+                        //Envio el mensaje a todos los jugadores
+                        jugadores = partidaActual.getJugadores();
+                        for (int i = 0; i < jugadores.size(); i++) {
+                            mensajeNuevo.addReceiver(jugadores.get(i).getAgenteJugador());
+                        }
+
+                        MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
+                        MovimientoRealizado mr = new MovimientoRealizado(movimiento.getJugador(), movimiento.getMovimiento());
+
+                        Jugador jugadorActivo = partidaActual.getSiguienteTurno();
+                        Partida partida = partidaActual.getPartida();
+                        JugarPartida jugarpartida = new JugarPartida(partida, movimiento.getMovimiento(), jugadorActivo);
+                        manager.fillContent(mensajeNuevo, new Action(getAID(), jugarpartida));
+
+                        //Paso el movimiento al tablero
+                        movimientosRealizados.add(mr);
+
+                        //Reinicio el comportamiento
                         reset();
                     } catch (Exception ex) {
                         ex.printStackTrace();
