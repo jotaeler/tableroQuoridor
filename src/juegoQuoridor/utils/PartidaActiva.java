@@ -45,11 +45,11 @@ public class PartidaActiva {
                 if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)) {
                     Casilla c = new Casilla(4, 0);
                     c.setJugador(_jugador);
-                    getPosJugador().add(c);
+                    posJugador.add(c);
                 } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)) {
                     Casilla c = new Casilla(4, 8);
                     c.setJugador(_jugador);
-                    getPosJugador().add(c);
+                    posJugador.add(c);
                 }
             }
         } else {
@@ -58,19 +58,19 @@ public class PartidaActiva {
                 if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)) {
                     Casilla c = new Casilla(4, 0);
                     c.setJugador(_jugador);
-                    getPosJugador().add(c);
+                    posJugador.add(c);
                 } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)) {
                     Casilla c = new Casilla(8, 4);
                     c.setJugador(_jugador);
-                    getPosJugador().add(c);
+                    posJugador.add(c);
                 } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3)) {
                     Casilla c = new Casilla(4, 8);
                     c.setJugador(_jugador);
-                    getPosJugador().add(c);
+                    posJugador.add(c);
                 } else if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4)) {
                     Casilla c = new Casilla(0, 4);
                     c.setJugador(_jugador);
-                    getPosJugador().add(c);
+                    posJugador.add(c);
                 }
             }
         }
@@ -88,8 +88,9 @@ public class PartidaActiva {
     }
 
     public Jugador getSiguienteTurno() {
+        Jugador j=getPosJugador().get(turno%partida.getNumeroJugadores()).getJugador();
         turno++;
-        return getPosJugador().get(turno).getJugador();
+        return j;
     }
 
     public ArrayList<Jugador> getJugadores() {

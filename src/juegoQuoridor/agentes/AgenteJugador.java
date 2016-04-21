@@ -26,11 +26,11 @@ import jade.proto.ContractNetResponder;
 import jade.proto.ProposeResponder;
 import jade.proto.SubscriptionInitiator;
 import java.util.ArrayList;
+import java.util.Random;
 import juegoQuoridor.elementos.FichaEntregada;
 import juegoQuoridor.elementos.JugarPartida;
 import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
-import juegoQuoridor.utils.PartidaActiva;
 import juegosTablero.elementos.Posicion;
 import juegosTablero.elementos.ProponerPartida;
 
@@ -183,10 +183,13 @@ public class AgenteJugador extends Agent {
                     /*
                     Extraer todo el conocimiento del objeto movimientoAnterior
                      */
-                    manager.fillContent(respuesta, mover(jp));
-                    System.out.println("Movimiento enviado por agente "+getAID().getName());
+                    MovimientoRealizado m = mover(jp);
+                    manager.fillContent(respuesta, m);
+                    System.out.println("Movimiento enviado por agente " + getAID().getName());
+                    System.out.println("Movimiento: " + m.toString());
+
                 } else {
-                    System.out.println("No es mi turno "+getAID().getName());
+                    System.out.println("No es mi turno " + getAID().getName());
                     respuesta.setPerformative(ACLMessage.REJECT_PROPOSAL);
                 }
 
@@ -252,11 +255,12 @@ public class AgenteJugador extends Agent {
     //Realiza un movimiento
     //Hay que determinar que parametros son necesarios pasar a este metodo
     private MovimientoRealizado mover(JugarPartida _jp) {
-        int x=(int)Math.random()*8;
-        int y=(int)Math.random()*8;
-        Posicion p=new Posicion(x,y);
-        Movimiento m=new Movimiento(ficha, p);
-       
+        Random rnd=new Random();
+        int x = (int)(rnd.nextDouble() * 8);;
+        int y = (int)(rnd.nextDouble() * 8);;
+        Posicion p = new Posicion(x, y);
+        Movimiento m = new Movimiento(ficha, p);
+
         return new MovimientoRealizado(_jp.getJugadorActivo(), m);
     }
 
