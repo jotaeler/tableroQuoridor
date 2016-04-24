@@ -74,14 +74,14 @@ public class PartidaActiva {
                 }
             }
         }
-
     }
 
     public Casilla getPosicionJugador(AID _jugador) {
         Casilla r = null;
         for (Casilla pos : getPosJugador()) {
-            if (pos.getJugador().getAgenteJugador() == _jugador) {
+            if (pos.getJugador().getAgenteJugador().equals(_jugador)) {
                 r = pos;
+//                posJugador.remove(pos);
             }
         }
         return r;
@@ -111,4 +111,9 @@ public class PartidaActiva {
     public ArrayList<Casilla> getPosJugador() {
         return posJugador;
     }
+    
+    public void setposJugador(Casilla casilla){
+        posJugador.add(casilla);
+    }
+    
 }

@@ -17,6 +17,7 @@ import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.elementos.Muro;
 import juegoQuoridor.utils.Casilla;
+import juegoQuoridor.utils.RepresentacionMovimiento;
 import juegosTablero.elementos.Ficha;
 import juegosTablero.elementos.Jugador;
 import juegosTablero.elementos.Posicion;
@@ -190,6 +191,7 @@ public class GUI extends javax.swing.JFrame {
             Object elementoJuego = mov.getElementoJuego();
 
             if (elementoJuego instanceof Muro) {
+                System.out.println("DENTRO DEL IF GUI");
                 if (elementoJuego != null) {
                     if (((Muro) (elementoJuego)).getAlineacion().equals(juegoQuoridor.OntologiaQuoridor.ALINEACION_HORIZONTAL)) {
                         String path = "muro-horizontal.png";
@@ -234,6 +236,7 @@ public class GUI extends javax.swing.JFrame {
                 url = this.getClass().getResource(path);
                 ImageIcon casilla = new ImageIcon(url);
                 labels[_posAnterior.getX() * 2][_posAnterior.getY() * 2].setIcon(casilla);
+                System.out.println("He cambiado de posicion");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -270,4 +273,5 @@ public class GUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel panelTablero;
     // End of variables declaration//GEN-END:variables
+
 }

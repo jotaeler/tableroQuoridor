@@ -256,8 +256,8 @@ public class AgenteJugador extends Agent {
     //Hay que determinar que parametros son necesarios pasar a este metodo
     private MovimientoRealizado mover(JugarPartida _jp) {
         Random rnd=new Random();
-        int x = (int)(rnd.nextDouble() * 8);;
-        int y = (int)(rnd.nextDouble() * 8);;
+        int x = (int)(rnd.nextDouble() * 8);
+        int y = (int)(rnd.nextDouble() * 8);
         Posicion p = new Posicion(x, y);
         Movimiento m = new Movimiento(ficha, p);
 

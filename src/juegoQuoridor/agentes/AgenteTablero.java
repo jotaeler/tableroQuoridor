@@ -66,6 +66,7 @@ public class AgenteTablero extends Agent {
     private PartidaActiva partidaActual = null;
 
     private LinkedList<RepresentacionMovimiento> movimientosRealizados;
+    private LinkedList<Casilla> movimientosAnteriores;
 
     @Override
     protected void setup() {
@@ -76,6 +77,7 @@ public class AgenteTablero extends Agent {
             }
         }
         movimientosRealizados = new LinkedList<RepresentacionMovimiento>();
+        movimientosAnteriores = new LinkedList<Casilla>();
         interfazInicio = new Quoridor(this);
         interfazInicio.setVisible(true);
         //Inicialización de variables
@@ -183,7 +185,7 @@ public class AgenteTablero extends Agent {
                 ACLMessage msg = (ACLMessage) e.nextElement();
 
                 if (msg.getPerformative() == ACLMessage.PROPOSE && proposes <= nJugadoresDeseados) {
-                    
+
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     aceptados.addElement(reply);
@@ -272,22 +274,39 @@ public class AgenteTablero extends Agent {
             while (e.hasMoreElements()) {
                 System.out.println("Agente tablero - Dentro de e.hasMoreElements");
                 ACLMessage msg = (ACLMessage) e.nextElement();
-                ACLMessage reply = msg.createReply();
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
                     System.out.println("Agente tablero - He recibido un accept proposal");
 
                     //Comprobar Si ha ganado la partida --> Envio el inform suscribe
                     try {
-
                         MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
+                        System.out.println("El AID del jugador es: " + msg.getSender());
+                        int x = movimiento.getMovimiento().getPosicion().getCoorX();
+                        int y = movimiento.getMovimiento().getPosicion().getCoorY();
+
+                        Casilla c = new Casilla(x, y);
+                        Casilla casilla = null;
+                        
+                        if (movimientosAnteriores.size() > 1) {
+                            System.out.println("DENTRO DEL ARRAY MOVIMIENTOS ANTERIORES");
+                            casilla = movimientosAnteriores.pop();
+                        } else {
+                            casilla = partidaActual.getPosicionJugador(msg.getSender());
+                        }
 
                         //Paso el movimiento al tablero
+                        Posicion p = new Posicion(casilla.getX(), casilla.getY());
                         
-                        Posicion p=new Posicion(partidaActual.getPosicionJugador(msg.getSender()).getX(),partidaActual.getPosicionJugador(msg.getSender()).getY());
-                        
-                        movimientosRealizados.addLast(new RepresentacionMovimiento(movimiento,p));
-                        
-                        System.out.println("Agente tablero ha recibido un movmiento a "+movimiento.toString());
+                        System.out.println("La posicion anterior es: " + p.getCoorX() + "," + p.getCoorY());
+                        System.out.println("La nuevo posicion es: " + x + "," + y);
+
+                        RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
+                        movimientosRealizados.addLast(rm);
+
+                        movimientosAnteriores.addLast(c);
+                        System.out.println("Se ha añadido un nuevo movimiento a la partida activa");
+
+                        System.out.println("Agente tablero ha recibido un movmiento a " + movimiento.toString());
 
                         //Reinicio el comportamiento
                         //Nuevo mensaje con el movimiento realizado
@@ -333,7 +352,6 @@ public class AgenteTablero extends Agent {
         ArrayList<Jugador> jugadores;
 
         try {
-            
             mensaje.setLanguage(codec.getName());
             mensaje.setOntology(ontology.getName());
             mensaje.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
@@ -345,7 +363,7 @@ public class AgenteTablero extends Agent {
             for (int i = 0; i < jugadores.size(); i++) {
                 mensaje.addReceiver(jugadores.get(i).getAgenteJugador());
             }
-            
+
             Jugador jugadorActivo = partidaActual.getSiguienteTurno();
             JugarPartida jugarpartida = new JugarPartida(partidaActual.getPartida(), null, jugadorActivo);
             manager.fillContent(mensaje, new Action(getAID(), jugarpartida));
@@ -355,13 +373,15 @@ public class AgenteTablero extends Agent {
 
         addBehaviour(new EnvioJugarPartida(this, mensaje));
 
-        addBehaviour(new TickerBehaviour(this, 3000) {
+        addBehaviour(new TickerBehaviour(this, 2000) {
             @Override
             protected void onTick() {
                 //Elimina el movimiento de la lista
                 if (movimientosRealizados.size() > 0) {
                     RepresentacionMovimiento m = movimientosRealizados.pop();
-                    interfazTablero.representarMovimiento(m);
+                    Casilla casilla = new Casilla(m.getPosAnterior().getCoorX(), m.getPosAnterior().getCoorY());
+                    System.out.println("Estoy mandando al tablero la posicion: " + casilla.getX() + "," + casilla.getY());
+                    interfazTablero.representarMovimiento(m.getMr(), casilla);
                 }
             }
         });
