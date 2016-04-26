@@ -87,7 +87,8 @@ public class AgenteTablero extends Agent {
         interfazInicio = new Quoridor(this);
         interfazInicio.setVisible(true);
         //Inicialización de variables
-
+        interfazTablero = new GUI(manager);
+        interfazTablero.setVisible(true);
         try {
             ontology = juegoQuoridor.OntologiaQuoridor.getInstance();
         } catch (BeanOntologyException ex) {

@@ -113,36 +113,43 @@ public class GUI extends javax.swing.JFrame {
         panelTablero = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMaximumSize(new java.awt.Dimension(700, 700));
-        setMinimumSize(new java.awt.Dimension(700, 700));
-        setPreferredSize(new java.awt.Dimension(800, 700));
+        setMaximumSize(new java.awt.Dimension(500, 600));
+        setMinimumSize(new java.awt.Dimension(500, 600));
+        setPreferredSize(new java.awt.Dimension(500, 600));
+        setResizable(false);
 
         panelTablero.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
-        panelTablero.setMaximumSize(new java.awt.Dimension(700, 700));
-        panelTablero.setMinimumSize(new java.awt.Dimension(700, 700));
+        panelTablero.setMaximumSize(new java.awt.Dimension(450, 450));
+        panelTablero.setMinimumSize(new java.awt.Dimension(450, 450));
         panelTablero.setName(""); // NOI18N
-        panelTablero.setPreferredSize(new java.awt.Dimension(700, 700));
+        panelTablero.setPreferredSize(new java.awt.Dimension(450, 450));
 
         javax.swing.GroupLayout panelTableroLayout = new javax.swing.GroupLayout(panelTablero);
         panelTablero.setLayout(panelTableroLayout);
         panelTableroLayout.setHorizontalGroup(
             panelTableroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 444, Short.MAX_VALUE)
         );
         panelTableroLayout.setVerticalGroup(
             panelTableroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 698, Short.MAX_VALUE)
+            .addGap(0, 444, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelTablero, javax.swing.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(panelTablero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(50, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelTablero, javax.swing.GroupLayout.DEFAULT_SIZE, 704, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(panelTablero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(150, Short.MAX_VALUE))
         );
 
         pack();
