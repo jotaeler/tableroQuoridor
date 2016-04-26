@@ -78,5 +78,22 @@ public class Casilla {
     public void setJugador(Jugador jugador) {
         this.jugador = jugador;
     }
-    
+
+    /**
+     * @param x the x to set
+     */
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    /**
+     * @param y the y to set
+     */
+    public void setY(int y) {
+        this.y = y;
+    }
+    public void setXY(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 }

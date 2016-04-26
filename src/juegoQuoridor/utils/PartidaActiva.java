@@ -78,7 +78,7 @@ public class PartidaActiva {
 
     public Casilla getPosicionJugador(AID _jugador) {
         Casilla r = null;
-        for (Casilla pos : getPosJugador()) {
+        for (Casilla pos : posJugador) {
             if (pos.getJugador().getAgenteJugador().equals(_jugador)) {
                 r = pos;
 //                posJugador.remove(pos);
@@ -86,9 +86,16 @@ public class PartidaActiva {
         }
         return r;
     }
+    public void setPosicionJugador(AID _jugador, int x, int y){
+        for (Casilla pos : posJugador) {
+            if (pos.getJugador().getAgenteJugador().equals(_jugador)) {
+                pos.setXY(x,y);
+            }
+        }
+    }
 
     public Jugador getSiguienteTurno() {
-        Jugador j=getPosJugador().get(turno%partida.getNumeroJugadores()).getJugador();
+        Jugador j=posJugador.get(turno%partida.getNumeroJugadores()).getJugador();
         turno++;
         return j;
     }
@@ -108,7 +115,7 @@ public class PartidaActiva {
     /**
      * @return the posJugador
      */
-    public ArrayList<Casilla> getPosJugador() {
+    public ArrayList<Casilla> getPosJugadores() {
         return posJugador;
     }
     

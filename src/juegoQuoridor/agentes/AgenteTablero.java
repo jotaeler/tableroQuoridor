@@ -67,7 +67,7 @@ public class AgenteTablero extends Agent {
     private PartidaActiva partidaActual = null;
 
     private LinkedList<RepresentacionMovimiento> movimientosRealizados;
-    private LinkedList<Casilla> movimientosAnteriores;
+
     private LinkedList<JugadorRanking> jugadorRanking;
     //por número de partidas jugadas.
     private Vector<PairJugadorPosicion> jugar;   //Vector para saber que jugadores son lo elegidos, por el número de partidas
@@ -81,14 +81,12 @@ public class AgenteTablero extends Agent {
             }
         }
         movimientosRealizados = new LinkedList<RepresentacionMovimiento>();
-        movimientosAnteriores = new LinkedList<Casilla>();
         jugadorRanking = new LinkedList<JugadorRanking>();
         jugar = new Vector();
+
         interfazInicio = new Quoridor(this);
         interfazInicio.setVisible(true);
         //Inicialización de variables
-        interfazTablero = new GUI(manager);
-        interfazTablero.setVisible(true);
         try {
             ontology = juegoQuoridor.OntologiaQuoridor.getInstance();
         } catch (BeanOntologyException ex) {
@@ -338,13 +336,10 @@ public class AgenteTablero extends Agent {
         protected void handleAllResponses(Vector respuestas) {
             ACLMessage mensajeNuevo = null;
             ArrayList<Jugador> jugadores = new ArrayList<>();
-            System.out.println("HandleAllResponses EnvioJugarPartida");
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
-                System.out.println("Agente tablero - Dentro de e.hasMoreElements");
                 ACLMessage msg = (ACLMessage) e.nextElement();
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
-                    System.out.println("Agente tablero - He recibido un accept proposal");
 
                     //Comprobar Si ha ganado la partida --> Envio el inform suscribe
                     try {
@@ -356,23 +351,17 @@ public class AgenteTablero extends Agent {
                         Casilla c = new Casilla(x, y);
                         Casilla casilla = null;
 
-                        if (movimientosAnteriores.size() > 1) {
-                            System.out.println("DENTRO DEL ARRAY MOVIMIENTOS ANTERIORES");
-                            casilla = movimientosAnteriores.pop();
-                        } else {
-                            casilla = partidaActual.getPosicionJugador(msg.getSender());
-                        }
-
+                        casilla = partidaActual.getPosicionJugador(msg.getSender());
                         //Paso el movimiento al tablero
                         Posicion p = new Posicion(casilla.getX(), casilla.getY());
 
                         System.out.println("La posicion anterior es: " + p.getCoorX() + "," + p.getCoorY());
                         System.out.println("La nuevo posicion es: " + x + "," + y);
+                        partidaActual.setPosicionJugador(msg.getSender(), x, y);
 
                         RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
                         movimientosRealizados.addLast(rm);
 
-                        movimientosAnteriores.addLast(c);
                         System.out.println("Se ha añadido un nuevo movimiento a la partida activa");
 
                         System.out.println("Agente tablero ha recibido un movmiento a " + movimiento.toString());
@@ -415,7 +404,7 @@ public class AgenteTablero extends Agent {
      */
     public void jugarPartida() {
         interfazTablero = new GUI(manager);
-        interfazTablero.cargaFichas(partidaActual.getPosJugador());
+        interfazTablero.cargaFichas(partidaActual.getPosJugadores());
         interfazTablero.setVisible(true);
         ACLMessage mensaje = new ACLMessage(ACLMessage.PROPOSE);
         ArrayList<Jugador> jugadores;
