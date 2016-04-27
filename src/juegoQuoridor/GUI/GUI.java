@@ -135,9 +135,9 @@ public class GUI extends javax.swing.JFrame {
         imgJugador4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMaximumSize(new java.awt.Dimension(610, 650));
-        setMinimumSize(new java.awt.Dimension(610, 650));
-        setPreferredSize(new java.awt.Dimension(610, 650));
+        setMaximumSize(new java.awt.Dimension(730, 650));
+        setMinimumSize(new java.awt.Dimension(730, 650));
+        setPreferredSize(new java.awt.Dimension(730, 650));
         setResizable(false);
 
         panelTablero.setMaximumSize(new java.awt.Dimension(450, 450));
@@ -160,7 +160,9 @@ public class GUI extends javax.swing.JFrame {
         infoJugadores.setMinimumSize(new java.awt.Dimension(450, 135));
 
         panelJugador1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        panelJugador1.setPreferredSize(new java.awt.Dimension(118, 113));
+        panelJugador1.setMaximumSize(new java.awt.Dimension(170, 121));
+        panelJugador1.setMinimumSize(new java.awt.Dimension(170, 121));
+        panelJugador1.setPreferredSize(new java.awt.Dimension(170, 121));
 
         imgJugador1.setMaximumSize(new java.awt.Dimension(40, 40));
         imgJugador1.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -175,17 +177,17 @@ public class GUI extends javax.swing.JFrame {
         panelJugador1Layout.setHorizontalGroup(
             panelJugador1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(panelJugador1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nombreJugador1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(panelJugador1Layout.createSequentialGroup()
-                        .addComponent(murosJugador1)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(panelJugador1Layout.createSequentialGroup()
-                .addGap(49, 49, 49)
-                .addComponent(imgJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(49, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addComponent(murosJugador1))
+                    .addGroup(panelJugador1Layout.createSequentialGroup()
+                        .addGap(64, 64, 64)
+                        .addComponent(imgJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelJugador1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(nombreJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         panelJugador1Layout.setVerticalGroup(
             panelJugador1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -194,12 +196,15 @@ public class GUI extends javax.swing.JFrame {
                 .addComponent(imgJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(nombreJugador1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(murosJugador1)
-                .addGap(24, 24, 24))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         panelJugador2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        panelJugador2.setMaximumSize(new java.awt.Dimension(170, 121));
+        panelJugador2.setMinimumSize(new java.awt.Dimension(170, 121));
+        panelJugador2.setPreferredSize(new java.awt.Dimension(170, 121));
 
         nombreJugador2.setText("jLabel1");
 
@@ -214,32 +219,34 @@ public class GUI extends javax.swing.JFrame {
         panelJugador2Layout.setHorizontalGroup(
             panelJugador2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador2Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(panelJugador2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nombreJugador2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(panelJugador2Layout.createSequentialGroup()
-                        .addComponent(murosJugador2)
-                        .addGap(0, 70, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(panelJugador2Layout.createSequentialGroup()
-                .addGap(49, 49, 49)
-                .addComponent(imgJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addComponent(murosJugador2))
+                    .addGroup(panelJugador2Layout.createSequentialGroup()
+                        .addGap(64, 64, 64)
+                        .addComponent(imgJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelJugador2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(nombreJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
         panelJugador2Layout.setVerticalGroup(
             panelJugador2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador2Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(imgJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(11, 11, 11)
                 .addComponent(nombreJugador2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(murosJugador2)
-                .addGap(24, 24, 24))
+                .addGap(23, 23, 23))
         );
 
         panelJugador3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        panelJugador3.setPreferredSize(new java.awt.Dimension(118, 113));
+        panelJugador3.setMaximumSize(new java.awt.Dimension(170, 121));
+        panelJugador3.setMinimumSize(new java.awt.Dimension(170, 121));
+        panelJugador3.setPreferredSize(new java.awt.Dimension(170, 121));
 
         nombreJugador3.setText("Inactivo");
 
@@ -254,32 +261,34 @@ public class GUI extends javax.swing.JFrame {
         panelJugador3Layout.setHorizontalGroup(
             panelJugador3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador3Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(panelJugador3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nombreJugador3, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
                     .addGroup(panelJugador3Layout.createSequentialGroup()
-                        .addComponent(murosJugador3)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(panelJugador3Layout.createSequentialGroup()
-                .addGap(46, 46, 46)
-                .addComponent(imgJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(64, 64, 64)
+                        .addComponent(imgJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelJugador3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(murosJugador3))
+                    .addGroup(panelJugador3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(nombreJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelJugador3Layout.setVerticalGroup(
             panelJugador3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador3Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(imgJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(11, 11, 11)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(nombreJugador3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(murosJugador3)
-                .addGap(24, 24, 24))
+                .addGap(23, 23, 23))
         );
 
         panelJugador4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        panelJugador4.setPreferredSize(new java.awt.Dimension(118, 113));
+        panelJugador4.setMaximumSize(new java.awt.Dimension(170, 121));
+        panelJugador4.setMinimumSize(new java.awt.Dimension(170, 121));
+        panelJugador4.setPreferredSize(new java.awt.Dimension(170, 121));
 
         nombreJugador4.setText("Inactivo");
 
@@ -294,28 +303,28 @@ public class GUI extends javax.swing.JFrame {
         panelJugador4Layout.setHorizontalGroup(
             panelJugador4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador4Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(panelJugador4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nombreJugador4, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
                     .addGroup(panelJugador4Layout.createSequentialGroup()
-                        .addComponent(murosJugador4)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(panelJugador4Layout.createSequentialGroup()
-                .addGap(48, 48, 48)
-                .addComponent(imgJugador4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(63, 63, 63)
+                        .addComponent(imgJugador4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelJugador4Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(murosJugador4))
+                    .addGroup(panelJugador4Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(nombreJugador4, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         panelJugador4Layout.setVerticalGroup(
             panelJugador4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelJugador4Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(imgJugador4, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(11, 11, 11)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(nombreJugador4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(murosJugador4)
-                .addGap(24, 24, 24))
+                .addGap(23, 23, 23))
         );
 
         javax.swing.GroupLayout infoJugadoresLayout = new javax.swing.GroupLayout(infoJugadores);
@@ -324,23 +333,25 @@ public class GUI extends javax.swing.JFrame {
             infoJugadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(infoJugadoresLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(panelJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(8, 8, 8)
-                .addComponent(panelJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelJugador4, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(panelJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(panelJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(panelJugador4, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         infoJugadoresLayout.setVerticalGroup(
             infoJugadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, infoJugadoresLayout.createSequentialGroup()
+                .addContainerGap(14, Short.MAX_VALUE)
                 .addGroup(infoJugadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(panelJugador1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-                    .addComponent(panelJugador2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-                    .addComponent(panelJugador3, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-                    .addComponent(panelJugador4, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))
+                    .addComponent(panelJugador4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(infoJugadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(panelJugador1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelJugador2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(panelJugador3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -350,16 +361,16 @@ public class GUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(infoJugadores, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(139, Short.MAX_VALUE)
                 .addComponent(panelTablero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(74, 74, 74))
+                .addGap(135, 135, 135))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(panelTablero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
                 .addComponent(infoJugadores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -504,8 +515,8 @@ public class GUI extends javax.swing.JFrame {
                     imgFicha = new ImageIcon(url);
                     panelJugador4.setEnabled(true);
                     imgJugador4.setIcon(imgFicha);
-                    nombreJugador3.setText(c.getJugador().getAgenteJugador().getName());
-                    murosJugador3.setText("Muros: 10");
+                    nombreJugador4.setText(c.getJugador().getAgenteJugador().getName());
+                    murosJugador4.setText("Muros: 10");
                     break;
                 default:
                     break;
@@ -522,8 +533,6 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JLabel imgJugador3;
     private javax.swing.JLabel imgJugador4;
     private javax.swing.JPanel infoJugadores;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JLabel murosJugador1;
     private javax.swing.JLabel murosJugador2;
     private javax.swing.JLabel murosJugador3;
