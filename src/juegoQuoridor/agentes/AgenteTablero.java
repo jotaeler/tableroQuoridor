@@ -33,6 +33,7 @@ import juegoQuoridor.elementos.FichaEntregada;
 import juegoQuoridor.elementos.JugarPartida;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
+import juegoQuoridor.utils.JugadorRanking;
 import juegoQuoridor.utils.PartidaActiva;
 import juegoQuoridor.utils.RepresentacionMovimiento;
 import juegosTablero.elementos.Ficha;
@@ -67,6 +68,9 @@ public class AgenteTablero extends Agent {
 
     private LinkedList<RepresentacionMovimiento> movimientosRealizados;
     private LinkedList<Casilla> movimientosAnteriores;
+    private LinkedList<JugadorRanking> jugadorRanking;
+    //por número de partidas jugadas.
+    private Vector<PairJugadorPosicion> jugar;   //Vector para saber que jugadores son lo elegidos, por el número de partidas
 
     @Override
     protected void setup() {
@@ -78,6 +82,8 @@ public class AgenteTablero extends Agent {
         }
         movimientosRealizados = new LinkedList<RepresentacionMovimiento>();
         movimientosAnteriores = new LinkedList<Casilla>();
+        jugadorRanking = new LinkedList<JugadorRanking>();
+        jugar = new Vector();
         interfazInicio = new Quoridor(this);
         interfazInicio.setVisible(true);
         //Inicialización de variables
@@ -179,6 +185,7 @@ public class AgenteTablero extends Agent {
             ArrayList<Jugador> jugadores = new ArrayList<Jugador>();
             int nJugadoresDeseados = partidaActual.getPartida().getNumeroJugadores();
             int proposes = 0;
+            int numPartidas = 0;
             Vector aceptados = new Vector();
             Enumeration e = respuestas.elements();
             while (e.hasMoreElements()) {
@@ -207,13 +214,18 @@ public class AgenteTablero extends Agent {
                     responder.add(aceptados.get(0));
                     break;
                 case 2:
-
                     for (int i = 0; i < 2; i++) {
                         try {
                             Ficha f = partidaActual.getSiguienteFicha();
                             manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
                             responder.add(aceptados.get(i));
-                            jugadores.add(new Jugador(jugadoresAID[i], f));
+                            Jugador jugador = new Jugador(jugadoresAID[i], f);
+                            jugadores.add(jugador);
+                            if (esta(jugador.getAgenteJugador()) != null) {
+                                incrementarPartida(jugador);
+                            } else {
+                                jugadorRanking.addLast(new JugadorRanking(jugador.getAgenteJugador()));
+                            }
                         } catch (Exception err) {
                             err.printStackTrace();
                         }
@@ -222,18 +234,68 @@ public class AgenteTablero extends Agent {
                     jugarPartida();
                     break;
                 case 3:
-                    for (int i = 0; i < 2; i++) {
+                    for (int i = 0; i < 3; i++) {
                         try {
-                            Ficha f = partidaActual.getSiguienteFicha();
-                            manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
-                            responder.add(aceptados.get(i));
-                            jugadores.add(new Jugador(jugadoresAID[i], f));
+                            JugadorRanking jr = esta(jugadoresAID[i]);
+                            if (jr != null) {  //El jugador ha jugado alguna partida
+                                if (i < 2) {
+                                    jugar.add(new PairJugadorPosicion(jr, i));
+                                } else {    //Es el tercer jugador          
+                                    numPartidas = jr.getPartidasJugadas();
+                                    //comprubro cual es el JugadorRanking que menos partida tiene
+                                    JugadorRanking jrMenor = jugadorMenosPartidas();
+                                    //Si numPartidas es menor que el jrMenor, elimino a jrMenor del vector e inserto al jr
+                                    if (numPartidas < jrMenor.getPartidasJugadas()) {
+                                        jugar.remove(jrMenor);
+                                        jugar.add(new PairJugadorPosicion(jr, i));
+                                    }
+                                }
+                            } else if (i == 2) {
+                                numPartidas = jr.getPartidasJugadas();
+                                JugadorRanking jrMenor = jugadorMenosPartidas();
+                                //Si numPartidas es menor que el jrMenor, elimino a jrMenor del vector e inserto al jr
+                                if (numPartidas < jrMenor.getPartidasJugadas()) {
+                                    jugar.remove(jrMenor);
+                                    jugar.add(new PairJugadorPosicion(jr, i));
+                                    jugadorRanking.addLast(new JugadorRanking(jugadoresAID[i]));
+                                }
+                            } else {
+                                jugadorRanking.addLast(new JugadorRanking(jugadoresAID[i]));
+                                jugar.add(new PairJugadorPosicion(jr, i));
+                            }
                         } catch (Exception err) {
                             err.printStackTrace();
                         }
                     }
-                    ((ACLMessage) aceptados.get(2)).setPerformative(ACLMessage.REJECT_PROPOSAL);
-                    responder.add(aceptados.get(2));
+
+                    /**
+                     * *
+                     * Recorro el vector de jugar que es donde estan los
+                     * jugadores que son aceptados en la partida el vector jugar
+                     * tiene un tipo PairJugadorPosicion que tiene un
+                     * JugadorRanking, junto con la posición que se corresponde
+                     * con el vector de aceptados
+                     */
+                    for (int i = 0; i < jugar.size(); i++) {
+                        try {
+                            int posicion = jugar.get(i).getPosicion();
+                            Ficha f = partidaActual.getSiguienteFicha();
+                            manager.fillContent((ACLMessage) aceptados.get(posicion), new FichaEntregada(f));
+                            responder.add(aceptados.get(posicion));
+                            Jugador jugador = new Jugador(jugadoresAID[posicion], f);
+                            jugadores.add(jugador);
+                            incrementarPartida(jugador);
+                        } catch (Exception err) {
+                            err.printStackTrace();
+                        }
+                    }
+
+                    /**
+                     * Por último rechazo al jugador que tiene más partidas jugadas
+                     */
+                    int posicionRechazo = jugadorRechazado();
+                    ((ACLMessage) aceptados.get(posicionRechazo)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                    responder.add(aceptados.get(posicionRechazo));
                     partidaActual.setJugadores(jugadores);
                     jugarPartida();
                     break;
@@ -243,7 +305,13 @@ public class AgenteTablero extends Agent {
                             Ficha f = partidaActual.getSiguienteFicha();
                             manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
                             responder.add(aceptados.get(i));
-                            jugadores.add(new Jugador(jugadoresAID[i], f));
+                            Jugador jugador = new Jugador(jugadoresAID[i], f);
+                            jugadores.add(jugador);
+                            if (esta(jugador.getAgenteJugador()) != null) {
+                                incrementarPartida(jugador);
+                            } else {
+                                jugadorRanking.addLast(new JugadorRanking(jugador.getAgenteJugador()));
+                            }
                         } catch (Exception err) {
                             err.printStackTrace();
                         }
@@ -286,7 +354,7 @@ public class AgenteTablero extends Agent {
 
                         Casilla c = new Casilla(x, y);
                         Casilla casilla = null;
-                        
+
                         if (movimientosAnteriores.size() > 1) {
                             System.out.println("DENTRO DEL ARRAY MOVIMIENTOS ANTERIORES");
                             casilla = movimientosAnteriores.pop();
@@ -296,7 +364,7 @@ public class AgenteTablero extends Agent {
 
                         //Paso el movimiento al tablero
                         Posicion p = new Posicion(casilla.getX(), casilla.getY());
-                        
+
                         System.out.println("La posicion anterior es: " + p.getCoorX() + "," + p.getCoorY());
                         System.out.println("La nuevo posicion es: " + x + "," + y);
 
@@ -420,6 +488,57 @@ public class AgenteTablero extends Agent {
             addBehaviour(new ProponerPartidaCN(this, mensajeCFP));
 
         }
+    }
+
+    /**
+     * Método para ver si el jugador ya ha jugado antes la partida
+     */
+    public JugadorRanking esta(AID j) {
+        for (JugadorRanking jugador : jugadorRanking) {
+            if (jugador.getJugador().equals(j)) {
+                return jugador;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Método para incrementar el numero de partidas que ha jugado
+     */
+    public void incrementarPartida(Jugador j) {
+        for (JugadorRanking jugador : jugadorRanking) {
+            if (jugador.getJugador().equals(j.getAgenteJugador())) {
+                jugador.incrementarPartida();
+                break;
+            }
+        }
+    }
+
+    /**
+     * *
+     * Método para saber cual es el jugador que menos partidas tiene
+     */
+    public JugadorRanking jugadorMenosPartidas() {
+        int i = 0;
+        if (jugar.get(i).getJugadorR().getPartidasJugadas() < jugar.get(i + 1).getJugadorR().getPartidasJugadas()) {
+            return jugar.get(i).getJugadorR();
+        }
+        return jugar.get(i + 1).getJugadorR();
+    }
+
+    public int jugadorRechazado() {
+        int i = 0;
+        int pos = -1;
+        if (jugar.get(i).getPosicion() != 0 && jugar.get(i + 1).getPosicion() != 0) {
+            pos = 0;
+        }
+        if (jugar.get(i).getPosicion() != 1 && jugar.get(i + 1).getPosicion() != 1) {
+            pos = 1;
+        }
+        if (jugar.get(i).getPosicion() != 2 && jugar.get(i + 1).getPosicion() != 2) {
+            pos = 2;
+        }
+        return pos;
     }
 
 }
