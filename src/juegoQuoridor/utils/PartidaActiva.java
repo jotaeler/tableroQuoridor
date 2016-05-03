@@ -27,7 +27,7 @@ public class PartidaActiva {
     public PartidaActiva(Partida _partida) {
         posJugador = new ArrayList<Casilla>();
         partida = _partida;
-        jugadores=new ArrayList<Jugador>();
+        jugadores = new ArrayList<Jugador>();
 
         fichasDisponibles = new LinkedList<Ficha>();
         fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1));
@@ -86,16 +86,18 @@ public class PartidaActiva {
         }
         return r;
     }
-    public void setPosicionJugador(AID _jugador, int x, int y){
+
+    public void setPosicionJugador(AID _jugador, int x, int y) {
         for (Casilla pos : posJugador) {
             if (pos.getJugador().getAgenteJugador().equals(_jugador)) {
-                pos.setXY(x,y);
+                pos.setXY(x, y);
             }
         }
     }
 
     public Jugador getSiguienteTurno() {
-        Jugador j=posJugador.get(turno%partida.getNumeroJugadores()).getJugador();
+        Jugador j = posJugador.get(turno % partida.getNumeroJugadores()).getJugador();
+        System.out.println("Hay "+posJugador.size()+" jugadores en la PARTIDA ACTIVA");
         turno++;
         return j;
     }
@@ -118,9 +120,9 @@ public class PartidaActiva {
     public ArrayList<Casilla> getPosJugadores() {
         return posJugador;
     }
-    
-    public void setposJugador(Casilla casilla){
+
+    public void setposJugador(Casilla casilla) {
         posJugador.add(casilla);
     }
-    
+
 }

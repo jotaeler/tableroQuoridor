@@ -5,6 +5,8 @@
  */
 package juegoQuoridor.agentes;
 
+import juegoQuoridor.utils.PairJugadorPosicion;
+import juegoQuoridor.utils.NumeroPartidasJugadas;
 import jade.content.ContentManager;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -26,6 +28,9 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import jade.content.onto.basic.Action;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.PriorityQueue;
 import java.util.Vector;
 import juegoQuoridor.GUI.GUI;
 import juegoQuoridor.GUI.Quoridor;
@@ -180,140 +185,99 @@ public class AgenteTablero extends Agent {
         //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
         protected void handleAllResponses(Vector respuestas, Vector responder) {
             // Evaluate proposals.
-            AID[] jugadoresAID = new AID[4];
+            AID[] jugadoresAID = new AID[20];
             ArrayList<Jugador> jugadores = new ArrayList<Jugador>();
+            Comparator<JugadorRanking> comparator = new NumeroPartidasJugadas();
+            PriorityQueue<JugadorRanking> listaJugadores = new PriorityQueue<JugadorRanking>(comparator);
             int nJugadoresDeseados = partidaActual.getPartida().getNumeroJugadores();
             int proposes = 0;
-            int numPartidas = 0;
             Vector aceptados = new Vector();
             Enumeration e = respuestas.elements();
+            int i = 0;
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
 
-                if (msg.getPerformative() == ACLMessage.PROPOSE && proposes <= nJugadoresDeseados) {
-
+                if (msg.getPerformative() == ACLMessage.PROPOSE) {
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                    //Añado el jugador a la lista con prioridad
+                    listaJugadores.add(new JugadorRanking(msg.getSender(), i));
                     aceptados.addElement(reply);
                     jugadoresAID[proposes] = msg.getSender();
                     proposes++;
+                    i++;
                 } else {
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                     responder.addElement(reply);
                 }
-
             }
-            switch (proposes) {
-                case 0:
-                    //RELLENAR
-                    break;
-                case 1:
-                    ((ACLMessage) aceptados.get(0)).setPerformative(ACLMessage.REJECT_PROPOSAL);
-                    responder.add(aceptados.get(0));
-                    break;
+            switch (nJugadoresDeseados) {
                 case 2:
-                    for (int i = 0; i < 2; i++) {
+                    System.out.println("NUMERO DE LISTAJUGADORES: " + listaJugadores.size());
+                    Iterator iteCase2 = listaJugadores.iterator();
+                    int iCase2 = 0;
+                    while (iteCase2.hasNext()) {
+                        JugadorRanking jugadorR = listaJugadores.poll();
+                        System.out.println("El jugador " + jugadorR.getJugador().getName() + " ha jugado "
+                                + jugadorR.getPartidasJugadas() + " partidas");
+                        int pos = jugadorR.getPosicionAceptados();
                         try {
-                            Ficha f = partidaActual.getSiguienteFicha();
-                            manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
-                            responder.add(aceptados.get(i));
-                            Jugador jugador = new Jugador(jugadoresAID[i], f);
-                            jugadores.add(jugador);
-                            if (esta(jugador.getAgenteJugador()) != null) {
-                                incrementarPartida(jugador);
+                            if (iCase2 < 2) {
+                                System.out.println("it vale: " + iCase2);
+                                Ficha f = partidaActual.getSiguienteFicha();
+                                manager.fillContent((ACLMessage) aceptados.get(pos), new FichaEntregada(f));
+                                responder.add(aceptados.get(pos));
+                                Jugador jugador = new Jugador(jugadoresAID[pos], f);
+                                jugadores.add(jugador);
+                                if (esta(jugador.getAgenteJugador()) != null) {
+                                    incrementarPartida(jugador);
+                                } else {
+                                    jugadorRanking.addLast(new JugadorRanking(jugador.getAgenteJugador()));
+                                }
                             } else {
-                                jugadorRanking.addLast(new JugadorRanking(jugador.getAgenteJugador()));
+                                /**
+                                 * Por último rechazo a los jugador que tienen
+                                 * más partidas jugadas
+                                 */
+                                ((ACLMessage) aceptados.get(pos)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                                responder.add(aceptados.get(pos));
                             }
                         } catch (Exception err) {
                             err.printStackTrace();
                         }
+                        iCase2++;
                     }
-                    partidaActual.setJugadores(jugadores);
-                    jugarPartida();
-                    break;
-                case 3:
-                    for (int i = 0; i < 3; i++) {
-                        try {
-                            JugadorRanking jr = esta(jugadoresAID[i]);
-                            if (jr != null) {  //El jugador ha jugado alguna partida
-                                if (i < 2) {
-                                    jugar.add(new PairJugadorPosicion(jr, i));
-                                } else {    //Es el tercer jugador          
-                                    numPartidas = jr.getPartidasJugadas();
-                                    //comprubro cual es el JugadorRanking que menos partida tiene
-                                    JugadorRanking jrMenor = jugadorMenosPartidas();
-                                    //Si numPartidas es menor que el jrMenor, elimino a jrMenor del vector e inserto al jr
-                                    if (numPartidas < jrMenor.getPartidasJugadas()) {
-                                        jugar.remove(jrMenor);
-                                        jugar.add(new PairJugadorPosicion(jr, i));
-                                    }
-                                }
-                            } else if (i == 2) {
-                                numPartidas = jr.getPartidasJugadas();
-                                JugadorRanking jrMenor = jugadorMenosPartidas();
-                                //Si numPartidas es menor que el jrMenor, elimino a jrMenor del vector e inserto al jr
-                                if (numPartidas < jrMenor.getPartidasJugadas()) {
-                                    jugar.remove(jrMenor);
-                                    jugar.add(new PairJugadorPosicion(jr, i));
-                                    jugadorRanking.addLast(new JugadorRanking(jugadoresAID[i]));
-                                }
-                            } else {
-                                jugadorRanking.addLast(new JugadorRanking(jugadoresAID[i]));
-                                jugar.add(new PairJugadorPosicion(jr, i));
-                            }
-                        } catch (Exception err) {
-                            err.printStackTrace();
-                        }
-                    }
-
-                    /**
-                     * *
-                     * Recorro el vector de jugar que es donde estan los
-                     * jugadores que son aceptados en la partida el vector jugar
-                     * tiene un tipo PairJugadorPosicion que tiene un
-                     * JugadorRanking, junto con la posición que se corresponde
-                     * con el vector de aceptados
-                     */
-                    for (int i = 0; i < jugar.size(); i++) {
-                        try {
-                            int posicion = jugar.get(i).getPosicion();
-                            Ficha f = partidaActual.getSiguienteFicha();
-                            manager.fillContent((ACLMessage) aceptados.get(posicion), new FichaEntregada(f));
-                            responder.add(aceptados.get(posicion));
-                            Jugador jugador = new Jugador(jugadoresAID[posicion], f);
-                            jugadores.add(jugador);
-                            incrementarPartida(jugador);
-                        } catch (Exception err) {
-                            err.printStackTrace();
-                        }
-                    }
-
-                    /**
-                     * Por último rechazo al jugador que tiene más partidas jugadas
-                     */
-                    int posicionRechazo = jugadorRechazado();
-                    ((ACLMessage) aceptados.get(posicionRechazo)).setPerformative(ACLMessage.REJECT_PROPOSAL);
-                    responder.add(aceptados.get(posicionRechazo));
                     partidaActual.setJugadores(jugadores);
                     jugarPartida();
                     break;
                 case 4:
-                    for (int i = 0; i < 4; i++) {
+                    System.out.println("NUMERO DE LISTAJUGADORES: " + listaJugadores.size());
+                    Iterator iteCase4 = listaJugadores.iterator();
+                    int iCase4 = 0;
+                    while (iteCase4.hasNext()) {
+                        JugadorRanking jugadorR = listaJugadores.poll();
+                        int pos = jugadorR.getPosicionAceptados();
                         try {
-                            Ficha f = partidaActual.getSiguienteFicha();
-                            manager.fillContent((ACLMessage) aceptados.get(i), new FichaEntregada(f));
-                            responder.add(aceptados.get(i));
-                            Jugador jugador = new Jugador(jugadoresAID[i], f);
-                            jugadores.add(jugador);
-                            if (esta(jugador.getAgenteJugador()) != null) {
-                                incrementarPartida(jugador);
+                            if (iCase4 < 4) {
+                                Ficha f = partidaActual.getSiguienteFicha();
+                                manager.fillContent((ACLMessage) aceptados.get(pos), new FichaEntregada(f));
+                                responder.add(aceptados.get(pos));
+                                Jugador jugador = new Jugador(jugadoresAID[pos], f);
+                                jugadores.add(jugador);
+                                if (esta(jugador.getAgenteJugador()) != null) {
+                                    incrementarPartida(jugador);
+                                } else {
+                                    jugadorRanking.addLast(new JugadorRanking(jugador.getAgenteJugador()));
+                                }
                             } else {
-                                jugadorRanking.addLast(new JugadorRanking(jugador.getAgenteJugador()));
+                                ((ACLMessage) aceptados.get(pos)).setPerformative(ACLMessage.REJECT_PROPOSAL);
+                                responder.add(aceptados.get(pos));
                             }
-                        } catch (Exception err) {
-                            err.printStackTrace();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
+                        iCase4++;
                     }
                     partidaActual.setJugadores(jugadores);
                     jugarPartida();
@@ -503,32 +467,4 @@ public class AgenteTablero extends Agent {
             }
         }
     }
-
-    /**
-     * *
-     * Método para saber cual es el jugador que menos partidas tiene
-     */
-    public JugadorRanking jugadorMenosPartidas() {
-        int i = 0;
-        if (jugar.get(i).getJugadorR().getPartidasJugadas() < jugar.get(i + 1).getJugadorR().getPartidasJugadas()) {
-            return jugar.get(i).getJugadorR();
-        }
-        return jugar.get(i + 1).getJugadorR();
-    }
-
-    public int jugadorRechazado() {
-        int i = 0;
-        int pos = -1;
-        if (jugar.get(i).getPosicion() != 0 && jugar.get(i + 1).getPosicion() != 0) {
-            pos = 0;
-        }
-        if (jugar.get(i).getPosicion() != 1 && jugar.get(i + 1).getPosicion() != 1) {
-            pos = 1;
-        }
-        if (jugar.get(i).getPosicion() != 2 && jugar.get(i + 1).getPosicion() != 2) {
-            pos = 2;
-        }
-        return pos;
-    }
-
 }
