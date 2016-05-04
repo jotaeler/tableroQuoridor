@@ -18,15 +18,23 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.domain.FIPANames;
+import jade.proto.SubscriptionResponder;
+import jade.proto.SubscriptionResponder.Subscription;
+import jade.proto.SubscriptionResponder.SubscriptionManager;
+import jade.domain.FIPAAgentManagement.NotUnderstoodException;
+import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import jade.proto.ProposeInitiator;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import jade.content.onto.basic.Action;
 import java.util.Vector;
+import java.util.Iterator;
 import juegoQuoridor.GUI.GUI;
 import juegoQuoridor.GUI.Quoridor;
 import juegoQuoridor.elementos.FichaEntregada;
@@ -62,6 +70,7 @@ public class AgenteTablero extends Agent {
     private Codec codec = new SLCodec();
     //La ontologia utilizada por el agente
     private Ontology ontology;
+    private Map<String, Subscription> suscripciones = new HashMap<String, Subscription>();
 
     private Casilla[][] tablero = new Casilla[9][9];
     private PartidaActiva partidaActual = null;
@@ -290,7 +299,8 @@ public class AgenteTablero extends Agent {
                     }
 
                     /**
-                     * Por último rechazo al jugador que tiene más partidas jugadas
+                     * Por último rechazo al jugador que tiene más partidas
+                     * jugadas
                      */
                     int posicionRechazo = jugadorRechazado();
                     ((ACLMessage) aceptados.get(posicionRechazo)).setPerformative(ACLMessage.REJECT_PROPOSAL);
@@ -387,6 +397,85 @@ public class AgenteTablero extends Agent {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
+                }
+            }
+        }
+    }
+
+    private class SubcripcionResp extends Agent {
+
+
+        protected void setup() {
+            System.out.println(this.getLocalName() + "esperando subcripciones");
+            MessageTemplate template = SuscriptionResponder.createMessageTemplate(ACLMessage.SUBSCRIBE);
+            SubscriptionManager gestor = new SubscriptionManager() {
+
+                public boolean register(Subscription suscripcion) {
+                    suscripciones.put(partidaActual.getPartida().getIdPartida(), suscripcion);
+                    return true;
+                }
+
+                public boolean deregister(Subscription suscripcion) {
+                    suscripciones.remove(partidaActual.getPartida().getIdPartida());
+                    return true;
+                }
+            };
+            this.addBehaviour(new HacerSuscripcion(this, template, gestor));
+        }
+        //Comprueba que el jugador es de esa misma partida
+
+        public void onTick() {
+            //Se crea y rellena el mensaje con la información que desea enviar.
+            ACLMessage mensaje = new ACLMessage(ACLMessage.INFORM);
+            mensaje.setContent(GanarPartida);//jugador que gana
+
+            //Se envía un mensaje a cada suscriptor
+            Iterator it = suscripciones.keySet().iterator();
+            while (it.hasNext()) {
+                if (it.next() == partidaActual.getPartida().getIdPartida()) {
+                    suscripciones.notify(mensaje);//mirar para acceder a elemento mapa
+                }
+            }
+        }
+    }
+
+    private class HacerSuscripcion extends SubscriptionResponder {
+
+        private Subscription suscripcion;
+
+        public HacerSuscripcion(Agent agente, MessageTemplate plantilla, SubscriptionManager gestor) {
+            super(agente, plantilla, gestor);
+        }
+
+        protected ACLMessage handleSubscription(ACLMessage propuesta) {
+            throwsNotUnderstoodException {
+                System.out.printf("%s: SUSCRIBE recibido de %s.\n",
+                        SubscriptionRes.this.getLocalName(), propuesta.getSender().getLocalName());
+                System.out.printf("%s: La propuesta es: %s.\n",
+                        SubscriptionRes.this.getLocalName(), propuesta.getContent());
+
+                //Comprueba los datos de la propuesta
+                if (SubscriptionRes.this.compruebaMensaje(propuesta.getContent())) {
+
+                    //Crea la suscripcion
+                    this.suscripcion = this.createSubscription(propuesta);
+
+                    try {
+                        //El SubscriptionManager registra la suscripcion
+                        this.mySubscriptionManager.register(suscripcion);
+                    } catch (Exception e) {
+                        System.out.println(SubscriptionRes.this.getLocalName() + ": Error en el registro de la suscripción.");
+                    }
+
+                    //Acepta la propuesta y la envía
+                    ACLMessage agree = propuesta.createReply();
+                    agree.setPerformative(ACLMessage.AGREE);
+                    return agree;
+                } else {
+                    //Rechaza la propuesta y la envía
+                    ACLMessage refuse = propuesta.createReply();
+                    refuse.setPerformative(ACLMessage.REFUSE);
+                    return refuse;
                 }
             }
         }
@@ -531,4 +620,44 @@ public class AgenteTablero extends Agent {
         return pos;
     }
 
+
+    /*Metodo para ver el ganador de la partida*/
+    public void ComprobarGanarPartida(MovimientoRealizado movimiento) {
+        if (partidaActual.getJugadores().size() == 2) {
+            if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY() == 9) {
+                    GanarPartida(movimiento.getJugador());
+                }
+            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
+                    GanarPartida(movimiento.getJugador());
+                }
+            }
+
+        } else if (partidaActual.getJugadores().size() == 4) {
+            if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY() == 9) {
+                    GanarPartida(movimiento.getJugador());
+                }
+            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
+                    GanarPartida(movimiento.getJugador());
+                }
+            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
+                if (movimiento.getMovimiento().getPosicion().getCoorX() == 9) {
+                    GanarPartida(movimiento.getJugador());
+                }
+            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
+                if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
+                    GanarPartida(movimiento.getJugador());
+                }
+
+            }
+
+        }
+    }
+
+    public void GanarPartida(Jugador j) {
+
+    }
 }
