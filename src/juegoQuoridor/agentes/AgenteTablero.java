@@ -57,7 +57,7 @@ import juegosTablero.elementos.ProponerPartida;
  */
 public class AgenteTablero extends Agent {
 
-    private GUI interfazTablero;
+    private Map<String, GUI> interfazTablero = new HashMap<String, GUI>();
     private Quoridor interfazInicio;
 
     private AID[] agentesJugador;
@@ -69,7 +69,7 @@ public class AgenteTablero extends Agent {
     //La ontologia utilizada por el agente
     private Ontology ontology;
     
-    Map<String, PartidaActiva> partidas = new HashMap<String, PartidaActiva>();
+    private Map<String, PartidaActiva> partidas = new HashMap<String, PartidaActiva>();
     int idPartidas=0;
 
     private LinkedList<RepresentacionMovimiento> movimientosRealizados;
@@ -361,9 +361,9 @@ public class AgenteTablero extends Agent {
      * Método jugar partida
      */
     public void jugarPartida(String _id) {
-        interfazTablero = new GUI(manager);
-        interfazTablero.cargaFichas(partidas.get(_id).getPosJugadores());
-        interfazTablero.setVisible(true);
+        interfazTablero.put(_id,new GUI(manager));
+        interfazTablero.get(_id).cargaFichas(partidas.get(_id).getPosJugadores());
+        interfazTablero.get(_id).setVisible(true);
         ACLMessage mensaje = new ACLMessage(ACLMessage.PROPOSE);
         ArrayList<Jugador> jugadores;
 
@@ -397,7 +397,7 @@ public class AgenteTablero extends Agent {
                     RepresentacionMovimiento m = movimientosRealizados.pop();
                     Casilla casilla = new Casilla(m.getPosAnterior().getCoorX(), m.getPosAnterior().getCoorY());
                     System.out.println("Estoy mandando al tablero la posicion: " + casilla.getX() + "," + casilla.getY());
-                    interfazTablero.representarMovimiento(m.getMr(), casilla);
+                    interfazTablero.get(_id).representarMovimiento(m.getMr(), casilla);
                 }
             }
         });
