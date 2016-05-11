@@ -14,10 +14,17 @@ import jade.core.AID;
 public class JugadorRanking {
     private AID jugador;
     private int partidasJugadas;
+    private int posicionAceptados;
+    
+    public JugadorRanking(AID _jugador, int pos){
+        jugador = _jugador;
+        partidasJugadas = 1;        
+        posicionAceptados = pos;
+    }
     
     public JugadorRanking(AID _jugador){
         jugador = _jugador;
-        partidasJugadas = 1;        
+        partidasJugadas = 1;
     }
 
     /**
@@ -40,7 +47,11 @@ public class JugadorRanking {
     public void incrementarPartida() {
         this.partidasJugadas++;
     }
-    
-    
-    
+
+    /**
+     * @return the posicionAceptados
+     */
+    public int getPosicionAceptados() {
+        return posicionAceptados;
+    }    
 }
