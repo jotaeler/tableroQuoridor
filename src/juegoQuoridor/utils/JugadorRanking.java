@@ -15,16 +15,19 @@ public class JugadorRanking {
     private AID jugador;
     private int partidasJugadas;
     private int posicionAceptados;
+    private int partidasGanadas;
     
     public JugadorRanking(AID _jugador, int pos){
         jugador = _jugador;
         partidasJugadas = 1;        
         posicionAceptados = pos;
+        partidasGanadas = 0;
     }
     
     public JugadorRanking(AID _jugador){
         jugador = _jugador;
         partidasJugadas = 1;
+        partidasGanadas = 0;
     }
 
     /**
@@ -46,6 +49,14 @@ public class JugadorRanking {
      */
     public void incrementarPartida() {
         this.partidasJugadas++;
+    }
+    
+    public void incrementarPartidaGanada() {
+        this.partidasGanadas++;
+    }
+    
+    public int getPartidasGanadas(){
+        return partidasGanadas;
     }
 
     /**

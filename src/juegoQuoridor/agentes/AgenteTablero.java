@@ -35,11 +35,13 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 import juegoQuoridor.GUI.GUI;
 import juegoQuoridor.GUI.Quoridor;
+import juegoQuoridor.GUI.Ranking;
 import juegoQuoridor.elementos.FichaEntregada;
 import juegoQuoridor.elementos.JugarPartida;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.utils.Casilla;
 import juegoQuoridor.utils.JugadorRanking;
+import juegoQuoridor.utils.NumeroPartidasGanadas;
 import juegoQuoridor.utils.PartidaActiva;
 import juegoQuoridor.utils.RepresentacionMovimiento;
 import juegosTablero.elementos.Ficha;
@@ -59,6 +61,13 @@ public class AgenteTablero extends Agent {
 
     private Map<String, GUI> interfazTablero = new HashMap<String, GUI>();
     private Quoridor interfazInicio;
+    private Ranking interfazRanking;
+
+    /**
+     * Estructura para guardar el ranking
+     */
+    Comparator<JugadorRanking> comparatorPG;
+    PriorityQueue<JugadorRanking> partidasGanadas;
 
     private AID[] agentesJugador;
     //private LinkedList<AID> agentesJugador=new LinkedList<AID>();
@@ -68,9 +77,9 @@ public class AgenteTablero extends Agent {
     private Codec codec = new SLCodec();
     //La ontologia utilizada por el agente
     private Ontology ontology;
-    
+
     private Map<String, PartidaActiva> partidas = new HashMap<String, PartidaActiva>();
-    int idPartidas=0;
+    int idPartidas = 0;
 
     private LinkedList<RepresentacionMovimiento> movimientosRealizados;
 
@@ -80,10 +89,11 @@ public class AgenteTablero extends Agent {
     protected void setup() {
         movimientosRealizados = new LinkedList<RepresentacionMovimiento>();
         jugadorRanking = new LinkedList<JugadorRanking>();
-
+        comparatorPG = new NumeroPartidasGanadas();
+        partidasGanadas = new PriorityQueue<JugadorRanking>(comparatorPG);
+        
         interfazInicio = new Quoridor(this);
         interfazInicio.setVisible(true);
-        //Inicialización de variables
         try {
             ontology = juegoQuoridor.OntologiaQuoridor.getInstance();
         } catch (BeanOntologyException ex) {
@@ -165,10 +175,12 @@ public class AgenteTablero extends Agent {
     }
 
     private class ProponerPartidaCN extends ContractNetInitiator {
+
         String idPartidaCN;
+
         public ProponerPartidaCN(Agent agente, ACLMessage plantilla, String _id) {
             super(agente, plantilla);
-            idPartidaCN=_id;
+            idPartidaCN = _id;
         }
 
         //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
@@ -178,11 +190,9 @@ public class AgenteTablero extends Agent {
             ArrayList<Jugador> jugadores = new ArrayList<Jugador>();
             Comparator<JugadorRanking> comparator = new NumeroPartidasJugadas();
             PriorityQueue<JugadorRanking> listaJugadores = new PriorityQueue<JugadorRanking>(comparator);
-            
-            
+
             int nJugadoresDeseados = partidas.get(idPartidaCN).getPartida().getNumeroJugadores();
-            
-            
+
             int proposes = 0;
             Vector aceptados = new Vector();
             Enumeration e = respuestas.elements();
@@ -285,10 +295,12 @@ public class AgenteTablero extends Agent {
     }
 
     private class EnvioJugarPartida extends ProposeInitiator {
+
         String idPartidaPI;
+
         public EnvioJugarPartida(Agent agente, ACLMessage plantilla, String _id) {
             super(agente, plantilla);
-            idPartidaPI=_id;
+            idPartidaPI = _id;
         }
 
         protected void handleAllResponses(Vector respuestas) {
@@ -298,14 +310,32 @@ public class AgenteTablero extends Agent {
             while (e.hasMoreElements()) {
                 ACLMessage msg = (ACLMessage) e.nextElement();
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
-
-                    //Comprobar Si ha ganado la partida --> Envio el inform suscribe
                     try {
                         MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
                         System.out.println("El AID del jugador es: " + msg.getSender());
                         int x = movimiento.getMovimiento().getPosicion().getCoorX();
                         int y = movimiento.getMovimiento().getPosicion().getCoorY();
 
+                        //Comprobar Si ha ganado la partida --> Envio el inform suscribe
+                        
+                        /**
+                         * Si ha ganado la partida se incrementa en 1 el numero
+                         * de partidas ganadas
+                         */
+                        JugadorRanking jugadorRa = estaPartidaGanadas(msg.getSender());
+                        if(jugadorRa != null){  //El jugador SI esta
+                            //incremento en 1 su partida
+                            jugadorRa.incrementarPartidaGanada();                       
+                            System.out.println("SE HA INCREMENTADO LA PARTIDA GANADA");
+                            System.out.println("EL JUGADOR EXISTE--> numero de jugadores: "+partidasGanadas.size());
+                        }else{
+                            JugadorRanking jr = new JugadorRanking(msg.getSender());
+                            jr.incrementarPartidaGanada();
+                            partidasGanadas.add(jr);
+                            System.out.println("Se ha creado una nuevo jugadorRanking");
+                            System.out.println("EL NUMERO DE OBJETOS DE PARTIDAS GANADAS ES: "+partidasGanadas.size());
+                        }
+                        
                         Casilla c = new Casilla(x, y);
                         Casilla casilla = null;
 
@@ -361,7 +391,7 @@ public class AgenteTablero extends Agent {
      * Método jugar partida
      */
     public void jugarPartida(String _id) {
-        interfazTablero.put(_id,new GUI(manager));
+        interfazTablero.put(_id, new GUI(manager));
         interfazTablero.get(_id).cargaFichas(partidas.get(_id).getPosJugadores());
         interfazTablero.get(_id).setVisible(true);
         ACLMessage mensaje = new ACLMessage(ACLMessage.PROPOSE);
@@ -387,7 +417,7 @@ public class AgenteTablero extends Agent {
             e.printStackTrace();
         }
 
-        addBehaviour(new EnvioJugarPartida(this, mensaje,_id));
+        addBehaviour(new EnvioJugarPartida(this, mensaje, _id));
 
         addBehaviour(new TickerBehaviour(this, 2000) {
             @Override
@@ -434,12 +464,26 @@ public class AgenteTablero extends Agent {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            addBehaviour(new ProponerPartidaCN(this, mensajeCFP,Integer.toString(idPartidas)));
+            addBehaviour(new ProponerPartidaCN(this, mensajeCFP, Integer.toString(idPartidas)));
             idPartidas++;
 
         }
     }
-
+    
+    /**
+     * Método parar enviar la estructura de datos que tiene el ranking de los jugadores 
+     */
+    public void enviarRanking(){
+        interfazRanking = new Ranking();
+        interfazRanking.recibirRanking(partidasGanadas);
+        interfazRanking.representar();
+        interfazRanking.setVisible(true);
+    }
+    
+//    public void mostrarRanking(){
+//        interfazRanking.setVisible(true);
+//    }
+    
     /**
      * Método para ver si el jugador ya ha jugado antes la partida
      */
@@ -462,5 +506,18 @@ public class AgenteTablero extends Agent {
                 break;
             }
         }
+    }
+
+    /**
+     * Método para comprobar si un jugador esta en las partidasGanadas
+     */
+    public JugadorRanking estaPartidaGanadas(AID j) {
+        for (JugadorRanking jugador : partidasGanadas) {
+            if (jugador.getJugador().equals(j)) {
+                return jugador;
+            }
+        }
+
+        return null;
     }
 }

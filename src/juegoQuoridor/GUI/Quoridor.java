@@ -117,8 +117,7 @@ public class Quoridor extends javax.swing.JFrame {
     }//GEN-LAST:event_boton_4_jugadoresActionPerformed
 
     private void btnRankingMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRankingMousePressed
-        Ranking vistaRanking=new Ranking();
-        vistaRanking.setVisible(true);
+        agenteTablero.enviarRanking();
     }//GEN-LAST:event_btnRankingMousePressed
 
     private void btnRankingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRankingActionPerformed
