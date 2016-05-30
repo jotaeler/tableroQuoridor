@@ -17,7 +17,6 @@ import juegoQuoridor.elementos.Movimiento;
 import juegoQuoridor.elementos.MovimientoRealizado;
 import juegoQuoridor.elementos.Muro;
 import juegoQuoridor.utils.Casilla;
-import juegoQuoridor.utils.RepresentacionMovimiento;
 import juegosTablero.elementos.Ficha;
 import juegosTablero.elementos.Jugador;
 import juegosTablero.elementos.Posicion;

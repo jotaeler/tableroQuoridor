@@ -315,10 +315,11 @@ public class AgenteTablero extends Agent {
                         }
                         iCase4++;
                     }
-                    partidas.get(idPartidaCN).setJugadores(jugadores);
-                    jugarPartida(idPartidaCN);
+                    
                     break;
             }
+            partidas.get(idPartidaCN).setJugadores(jugadores);       
+            jugarPartida(idPartidaCN);
         }
 
         //Manejador de los mensajes inform.
