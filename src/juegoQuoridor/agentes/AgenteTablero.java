@@ -327,6 +327,11 @@ public class AgenteTablero extends Agent {
         }
     }
 
+    /**
+     * Clase para recoger los movimientos de los jugadores, tratarlos y enviarlos a todos los jugadores de la partida
+     * hasta que un movimiento sea el ganador, en cuyo caso se notificará a todos los jugadores que la partida ha 
+     * finalizado.
+     */
     private class EnvioJugarPartida extends ProposeInitiator {
 
         String idPartidaPI;
@@ -474,8 +479,11 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
+    
     /**
-     * Método jugar partida
+     * Método que se ejecuta una sola vez al finalizar la clase ProponerPartidaCN, que envia el primer movimiento
+     * a null y representa los movimientos en el tablero cada 2 segundos.
+     * @param _id identificador de la partida
      */
     public void jugarPartida(String _id) {
         interfazTablero.put(_id, new GUI(manager));
@@ -506,6 +514,7 @@ public class AgenteTablero extends Agent {
 
         addBehaviour(new EnvioJugarPartida(this, mensaje, _id));
 
+        
         addBehaviour(new TickerBehaviour(this, 2000) {
             @Override
             protected void onTick() {
@@ -561,6 +570,7 @@ public class AgenteTablero extends Agent {
      * Método parar enviar la estructura de datos que tiene el ranking de los
      * jugadores
      */
+    
     public void enviarRanking() {
         interfazRanking = new Ranking();
         interfazRanking.recibirRanking(partidasGanadas);
@@ -571,8 +581,11 @@ public class AgenteTablero extends Agent {
 //    public void mostrarRanking(){
 //        interfazRanking.setVisible(true);
 //    }
+    
     /**
      * Método para ver si el jugador ya ha jugado antes la partida
+     * @param j AID del jugador  
+     * @return el jugador en caso que este en jugadorRanking, o null en caso contrario
      */
     public JugadorRanking esta(AID j) {
         for (JugadorRanking jugador : jugadorRanking) {
@@ -582,9 +595,10 @@ public class AgenteTablero extends Agent {
         }
         return null;
     }
-
+    
     /**
-     * Método para incrementar el numero de partidas que ha jugado
+     * Método para incrementar el número de partidas que ha jugado
+     * @param j Jugador 
      */
     public void incrementarPartida(Jugador j) {
         for (JugadorRanking jugador : jugadorRanking) {
@@ -651,8 +665,10 @@ public class AgenteTablero extends Agent {
     }
     
     /**
-         * Método para comprobar si un jugador esta en las partidasGanadas
-         */
+     * Método para comprobar si un jugador esta en las partidasGanadas
+     * @param j AID del jugador
+     * @return el jugador en caso que este en partidasGanadas y null en caso contrario
+     */
     public JugadorRanking estaPartidaGanadas(AID j) {
         for (JugadorRanking jugador : partidasGanadas) {
             if (jugador.getJugador().equals(j)) {
