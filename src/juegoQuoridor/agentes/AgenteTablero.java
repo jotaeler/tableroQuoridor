@@ -78,29 +78,37 @@ public class AgenteTablero extends Agent {
     PriorityQueue<JugadorRanking> partidasGanadas;
 
     private AID[] agentesJugador;
-    //private LinkedList<AID> agentesJugador=new LinkedList<AID>();
 
     private ContentManager manager = (ContentManager) getContentManager();
     //El lenguaje utilizado por el agente para la comunicacíon es SL
     private Codec codec = new SLCodec();
     //La ontologia utilizada por el agente
     private Ontology ontology;
+    //Estructura que almacena las suscripciones de los jugadores
     private Map<String, ArrayList<Subscription>> suscripciones = new HashMap<String, ArrayList<Subscription>>();
 
     private Map<String, PartidaActiva> partidas = new HashMap<String, PartidaActiva>();
 
+    //Variable incremental con los id de las partidas
     int idPartidas = 0;
 
+    //Lista con los movimientos que recibe el tablero para despues representarlos
     private LinkedList<RepresentacionMovimiento> movimientosRealizados;
 
     private LinkedList<JugadorRanking> jugadorRanking;
 
+    // Se encarga de lelvar a cabo los registros y borrados de la suscripcioes de los jugadores
     SubscriptionManager gestor;
 
     @Override
     protected void setup() {
         gestor = new SubscriptionManager() {
-
+            /**
+             * Registra a los jugadores
+             *
+             * @param suscripcion que va a ser registrada
+             * @return true en caso de exito, flase si no
+             */
             public boolean register(Subscription suscripcion) {
                 try {
 
@@ -112,6 +120,12 @@ public class AgenteTablero extends Agent {
                 return true;
             }
 
+            /**
+             * Borra a los jugadores de la estructura de suscipciones
+             *
+             * @param suscripcion que deseamos borrar
+             * @return true en caso de exito, false si no
+             */
             public boolean deregister(Subscription suscripcion) {
                 try {
                     suscripciones.remove(((GanadorPartida) manager.extractContent(suscripcion.getMessage())).getPartida().getIdPartida());
@@ -170,9 +184,11 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
+    /**
+     * Tarea que se repite y busca agentes jugador en la plataforma
+     */
     public class BuscarAgentes extends TickerBehaviour {
 
-        //Se buscarán agentes consola y operación
         public BuscarAgentes(Agent a, long period) {
             super(a, period);
         }
@@ -198,10 +214,14 @@ public class AgenteTablero extends Agent {
                         agentesJugador[i] = result[i].getName();
                         System.out.println("Registrado nuevo agente: " + result[i].getName());
                     }
+                    if (result.length >= 2) {
+                        interfazInicio.setEnabledJugar(true);
+                    }
 
                 } else {
                     //No se han encontrado agentes jugador
                     agentesJugador = null;
+                    interfazInicio.setEnabledJugar(false);
                 }
             } catch (FIPAException fe) {
                 fe.printStackTrace();
@@ -209,16 +229,36 @@ public class AgenteTablero extends Agent {
         }
     }
 
+    /**
+     * Protocolo Contract-net que utilizamos para proponer una partida a los
+     * jugadores
+     */
     private class ProponerPartidaCN extends ContractNetInitiator {
 
         String idPartidaCN;
 
+        /**
+         * Constructor de la clase ProponerPartidaCN, envia un mensaje mediante
+         * el protocolo contract-net
+         *
+         * @param agente Agente que envia el mensaje
+         * @param plantilla Parametros del mensaje
+         * @param _id identificador de la partida
+         */
         public ProponerPartidaCN(Agent agente, ACLMessage plantilla, String _id) {
             super(agente, plantilla);
             idPartidaCN = _id;
         }
 
-        //Método colectivo llamado tras finalizar el tiempo de espera o recibir todas las propuestas.
+        /**
+         * Método colectivo ejecutado tras finalizar el tiempo de espera o
+         * recibir todas las propuestas. En este metodo se comprueba si el
+         * numero de jugadores que ha contestado es el deseado para poder
+         * iniciar la partida.
+         *
+         * @param respuestas respuestas recibidas por los agentes
+         * @param responder mensajes que se van a enviar como respuestas
+         */
         protected void handleAllResponses(Vector respuestas, Vector responder) {
             // Evaluate proposals.
             AID[] jugadoresAID = new AID[20];
@@ -250,15 +290,13 @@ public class AgenteTablero extends Agent {
                     responder.addElement(reply);
                 }
             }
+            //Ordenamos las respuestas por orden del ranking para dar prioridad a los que han jugado menos
             switch (nJugadoresDeseados) {
                 case 2:
-                    System.out.println("NUMERO DE LISTAJUGADORES: " + listaJugadores.size());
                     Iterator iteCase2 = listaJugadores.iterator();
                     int iCase2 = 0;
                     while (iteCase2.hasNext()) {
                         JugadorRanking jugadorR = listaJugadores.poll();
-                        System.out.println("El jugador " + jugadorR.getJugador().getName() + " ha jugado "
-                                + jugadorR.getPartidasJugadas() + " partidas");
                         int pos = jugadorR.getPosicionAceptados();
                         try {
                             if (iCase2 < 2) {
@@ -289,7 +327,6 @@ public class AgenteTablero extends Agent {
 
                     break;
                 case 4:
-                    System.out.println("NUMERO DE LISTAJUGADORES: " + listaJugadores.size());
                     Iterator iteCase4 = listaJugadores.iterator();
                     int iCase4 = 0;
                     while (iteCase4.hasNext()) {
@@ -316,10 +353,10 @@ public class AgenteTablero extends Agent {
                         }
                         iCase4++;
                     }
-                    
+
                     break;
             }
-            partidas.get(idPartidaCN).setJugadores(jugadores);       
+            partidas.get(idPartidaCN).setJugadores(jugadores);
             jugarPartida(idPartidaCN);
         }
 
@@ -330,9 +367,10 @@ public class AgenteTablero extends Agent {
     }
 
     /**
-     * Clase para recoger los movimientos de los jugadores, tratarlos y enviarlos a todos los jugadores de la partida
-     * hasta que un movimiento sea el ganador, en cuyo caso se notificará a todos los jugadores que la partida ha 
-     * finalizado.
+     * Clase para recoger los movimientos de los jugadores, tratarlos y
+     * enviarlos a todos los jugadores de la partida hasta que un movimiento sea
+     * el ganador, en cuyo caso se notificará a todos los jugadores que la
+     * partida ha finalizado.
      */
     private class EnvioJugarPartida extends ProposeInitiator {
 
@@ -352,27 +390,23 @@ public class AgenteTablero extends Agent {
                 if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
                     try {
                         MovimientoRealizado movimiento = (MovimientoRealizado) manager.extractContent(msg);
-                        System.out.println("El AID del jugador es: " + msg.getSender());
                         int x = movimiento.getMovimiento().getPosicion().getCoorX();
                         int y = movimiento.getMovimiento().getPosicion().getCoorY();
 
                         //Comprobar Si ha ganado la partida --> Envio el inform suscribe
-                        /**
-                         * Si ha ganado la partida se incrementa en 1 el numero
-                         * de partidas ganadas
-                         */
-                        JugadorRanking jugadorRa = estaPartidaGanadas(msg.getSender());
-                        if (jugadorRa != null) {  //El jugador SI esta
-                            //incremento en 1 su partida
-                            jugadorRa.incrementarPartidaGanada();
-                            System.out.println("SE HA INCREMENTADO LA PARTIDA GANADA");
-                            System.out.println("EL JUGADOR EXISTE--> numero de jugadores: " + partidasGanadas.size());
-                        } else {
-                            JugadorRanking jr = new JugadorRanking(msg.getSender());
-                            jr.incrementarPartidaGanada();
-                            partidasGanadas.add(jr);
-                            System.out.println("Se ha creado una nuevo jugadorRanking");
-                            System.out.println("EL NUMERO DE OBJETOS DE PARTIDAS GANADAS ES: " + partidasGanadas.size());
+                        if (ComprobarGanarPartida(movimiento, idPartidaPI)) {
+                            JugadorRanking jugadorRa = estaPartidaGanadas(msg.getSender());
+                            if (jugadorRa != null) {  //El jugador SI esta
+                                //incremento en 1 su partida
+                                jugadorRa.incrementarPartidaGanada();
+
+                            } else {
+                                JugadorRanking jr = new JugadorRanking(msg.getSender());
+                                jr.incrementarPartidaGanada();
+                                partidasGanadas.add(jr);
+                             
+                            }
+                             GanadorPartida(movimiento.getJugador(), partidas.get(idPartidaPI).getPartida());
                         }
 
                         Casilla c = new Casilla(x, y);
@@ -382,16 +416,10 @@ public class AgenteTablero extends Agent {
                         //Paso el movimiento al tablero
                         Posicion p = new Posicion(casilla.getX(), casilla.getY());
 
-                        System.out.println("La posicion anterior es: " + p.getCoorX() + "," + p.getCoorY());
-                        System.out.println("La nuevo posicion es: " + x + "," + y);
                         partidas.get(idPartidaPI).setPosicionJugador(msg.getSender(), x, y);
 
                         RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
                         movimientosRealizados.addLast(rm);
-
-                        System.out.println("Se ha añadido un nuevo movimiento a la partida activa");
-
-                        System.out.println("Agente tablero ha recibido un movmiento a " + movimiento.toString());
 
                         //Reinicio el comportamiento
                         //Nuevo mensaje con el movimiento realizado
@@ -419,6 +447,9 @@ public class AgenteTablero extends Agent {
         }
     }
 
+    /**
+     * Clase que recibe las suscipciones para asi poder registrarlas o borrarlas
+     */
     private class HacerSuscripcion extends SubscriptionResponder {
 
         private Subscription suscripcion;
@@ -458,7 +489,6 @@ public class AgenteTablero extends Agent {
         }
 
         protected ACLMessage handleCancel(ACLMessage cancelacion) {
-            System.out.printf("Cancelacion");
 
             try {
                 //El SubscriptionManager elimina del registro la suscripcion
@@ -481,14 +511,15 @@ public class AgenteTablero extends Agent {
      *
      ********************************************************************
      */
-    
     /**
-     * Método que se ejecuta una sola vez al finalizar la clase ProponerPartidaCN, que envia el primer movimiento
-     * a null y representa los movimientos en el tablero cada 2 segundos.
+     * Método que se ejecuta una sola vez al finalizar la clase
+     * ProponerPartidaCN, que envia el primer movimiento a null y representa los
+     * movimientos en el tablero cada 2 segundos.
+     *
      * @param _id identificador de la partida
      */
     public void jugarPartida(String _id) {
-        interfazTablero.put(_id, new GUI(manager));
+        interfazTablero.put(_id, new GUI());
         interfazTablero.get(_id).cargaFichas(partidas.get(_id).getPosJugadores());
         interfazTablero.get(_id).setVisible(true);
         ACLMessage mensaje = new ACLMessage(ACLMessage.PROPOSE);
@@ -516,7 +547,6 @@ public class AgenteTablero extends Agent {
 
         addBehaviour(new EnvioJugarPartida(this, mensaje, _id));
 
-        
         addBehaviour(new TickerBehaviour(this, 2000) {
             @Override
             protected void onTick() {
@@ -524,7 +554,6 @@ public class AgenteTablero extends Agent {
                 if (movimientosRealizados.size() > 0) {
                     RepresentacionMovimiento m = movimientosRealizados.pop();
                     Casilla casilla = new Casilla(m.getPosAnterior().getCoorX(), m.getPosAnterior().getCoorY());
-                    System.out.println("Estoy mandando al tablero la posicion: " + casilla.getX() + "," + casilla.getY());
                     interfazTablero.get(_id).representarMovimiento(m.getMr(), casilla);
                 }
             }
@@ -572,14 +601,13 @@ public class AgenteTablero extends Agent {
      * Método parar enviar la estructura de datos que tiene el ranking de los
      * jugadores
      */
-    
     public void enviarRanking() {
         interfazRanking = new Ranking();
         interfazRanking.recibirRanking(partidasGanadas);
         interfazRanking.representar();
         interfazRanking.setVisible(true);
     }
-    
+
     /**
      * Método para mostrar la ventana de ganador
      */
@@ -590,8 +618,10 @@ public class AgenteTablero extends Agent {
 
     /**
      * Método para ver si el jugador ya ha jugado antes la partida
-     * @param j AID del jugador  
-     * @return el jugador en caso que este en jugadorRanking, o null en caso contrario
+     *
+     * @param j AID del jugador
+     * @return el jugador en caso que este en jugadorRanking, o null en caso
+     * contrario
      */
     public JugadorRanking esta(AID j) {
         for (JugadorRanking jugador : jugadorRanking) {
@@ -601,10 +631,11 @@ public class AgenteTablero extends Agent {
         }
         return null;
     }
-    
+
     /**
      * Método para incrementar el número de partidas que ha jugado
-     * @param j Jugador 
+     *
+     * @param j Jugador
      */
     public void incrementarPartida(Jugador j) {
         for (JugadorRanking jugador : jugadorRanking) {
@@ -615,42 +646,61 @@ public class AgenteTablero extends Agent {
         }
     }
 
-    /*Metodo para ver el ganador de la partida*/
-    public void ComprobarGanarPartida(MovimientoRealizado movimiento, String idPartida) {
+    /**
+     * Metodo para ver el ganador de la partida
+     *
+     * @param movimiento que ha realizado un jugador
+     * @param idPartida partida que se realiza ese movimiento
+     * @return true en caso de que exista ganador, fasle si no existe
+     */
+    public boolean ComprobarGanarPartida(MovimientoRealizado movimiento, String idPartida) {
         if (partidas.get(idPartida).getJugadores().size() == 2) {
             if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+
                 }
             }
 
         } else if (partidas.get(idPartida).getJugadores().size() == 4) {
             if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
                 if (movimiento.getMovimiento().getPosicion().getCoorX() == 8) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
                 if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+
                 }
 
             }
 
         }
+        return false;
     }
 
+    /**
+     * Metodo que informa a todos los jugadores de una partida si hay ganador y
+     * esta finaliza
+     *
+     * @param j jugador de la partida
+     * @param partida Partida de esa jugador
+     */
     public void GanadorPartida(Jugador j, Partida partida) {
         GanadorPartida ganador = new GanadorPartida(j, partida);
         ACLMessage mensaje = new ACLMessage(ACLMessage.INFORM);
@@ -667,13 +717,15 @@ public class AgenteTablero extends Agent {
         } catch (Exception err) {
             err.printStackTrace();
         }
-       
+
     }
-    
+
     /**
      * Método para comprobar si un jugador esta en las partidasGanadas
+     *
      * @param j AID del jugador
-     * @return el jugador en caso que este en partidasGanadas y null en caso contrario
+     * @return el jugador en caso que este en partidasGanadas y null en caso
+     * contrario
      */
     public JugadorRanking estaPartidaGanadas(AID j) {
         for (JugadorRanking jugador : partidasGanadas) {
