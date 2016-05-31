@@ -38,8 +38,8 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 import java.util.ArrayList;
 import java.util.Iterator;
-import static javax.swing.text.html.HTML.Tag.HEAD;
 import juegoQuoridor.GUI.GUI;
+import juegoQuoridor.GUI.Ganador;
 import juegoQuoridor.GUI.Quoridor;
 import juegoQuoridor.GUI.Ranking;
 import juegoQuoridor.elementos.FichaEntregada;
@@ -69,6 +69,7 @@ public class AgenteTablero extends Agent {
     private Map<String, GUI> interfazTablero = new HashMap<String, GUI>();
     private Quoridor interfazInicio;
     private Ranking interfazRanking;
+    private Ganador interfazGandor;
 
     /**
      * Estructura para guardar el ranking
@@ -578,11 +579,15 @@ public class AgenteTablero extends Agent {
         interfazRanking.representar();
         interfazRanking.setVisible(true);
     }
-
-//    public void mostrarRanking(){
-//        interfazRanking.setVisible(true);
-//    }
     
+    /**
+     * Método para mostrar la ventana de ganador
+     */
+    public void mostrarGanador() {
+        interfazGandor = new Ganador();
+        interfazGandor.setVisible(true);
+    }
+
     /**
      * Método para ver si el jugador ya ha jugado antes la partida
      * @param j AID del jugador  
