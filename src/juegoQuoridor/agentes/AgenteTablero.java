@@ -84,6 +84,7 @@ public class AgenteTablero extends Agent {
     private Codec codec = new SLCodec();
     //La ontologia utilizada por el agente
     private Ontology ontology;
+    //Estructura que almacena las suscripciones de los jugadores
     private Map<String, ArrayList<Subscription>> suscripciones = new HashMap<String, ArrayList<Subscription>>();
 
     private Map<String, PartidaActiva> partidas = new HashMap<String, PartidaActiva>();
@@ -94,12 +95,18 @@ public class AgenteTablero extends Agent {
 
     private LinkedList<JugadorRanking> jugadorRanking;
 
+    // Se encarga de lelvar a cabo los registros y borrados de la suscripcioes de los jugadores
     SubscriptionManager gestor;
 
+    
     @Override
     protected void setup() {
         gestor = new SubscriptionManager() {
-
+/**
+ * Registra a los jugadores
+ * @param suscripcion que va a ser registrada
+ * @return true en caso de exito, flase si no
+ */
             public boolean register(Subscription suscripcion) {
                 try {
 
@@ -110,7 +117,11 @@ public class AgenteTablero extends Agent {
 
                 return true;
             }
-
+/**
+ * Borra a los jugadores de la estructura de suscipciones
+ * @param suscripcion que deseamos borrar
+ * @return true en caso de exito, false si no
+ */
             public boolean deregister(Subscription suscripcion) {
                 try {
                     suscripciones.remove(((GanadorPartida) manager.extractContent(suscripcion.getMessage())).getPartida().getIdPartida());
@@ -417,7 +428,9 @@ public class AgenteTablero extends Agent {
             }
         }
     }
-
+/**
+ * Clase que recibe las suscipciones para asi poder registrarlas o borrarlas
+ */
     private class HacerSuscripcion extends SubscriptionResponder {
 
         private Subscription suscripcion;
@@ -610,42 +623,59 @@ public class AgenteTablero extends Agent {
         }
     }
 
-    /*Metodo para ver el ganador de la partida*/
-    public void ComprobarGanarPartida(MovimientoRealizado movimiento, String idPartida) {
+    
+    /**
+     * Metodo para ver el ganador de la partida
+     * @param movimiento que ha realizado un jugador
+     * @param idPartida partida que se realiza ese movimiento
+     * @return true en caso de que exista ganador, fasle si no existe
+     */
+    public boolean ComprobarGanarPartida(MovimientoRealizado movimiento, String idPartida) {
         if (partidas.get(idPartida).getJugadores().size() == 2) {
             if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                   return true;
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+                
                 }
             }
 
         } else if (partidas.get(idPartida).getJugadores().size() == 4) {
             if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+                
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
                 if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+                
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
                 if (movimiento.getMovimiento().getPosicion().getCoorX() == 8) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+                
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
                 if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
-                    GanadorPartida(movimiento.getJugador(), partidas.get(idPartida).getPartida());
+                    return true;
+                
                 }
 
             }
 
         }
+        return false;
     }
 
+    /**
+     * Metodo que informa a todos los jugadores de una partida si hay ganador y esta finaliza
+     * @param j jugador de la partida
+     * @param partida Partida de esa jugador
+     */
     public void GanadorPartida(Jugador j, Partida partida) {
         GanadorPartida ganador = new GanadorPartida(j, partida);
         ACLMessage mensaje = new ACLMessage(ACLMessage.INFORM);
