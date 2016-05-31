@@ -663,23 +663,27 @@ public class AgenteTablero extends Agent {
                 case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1:
                     if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
                         return true;
-                        
-                    }   break;
+
+                    }
+                    break;
                 case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2:
                     if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
                         return true;
-                        
-                    }   break;
+
+                    }
+                    break;
                 case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3:
                     if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
                         return true;
-                        
-                    }   break;
+
+                    }
+                    break;
                 case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4:
                     if (movimiento.getMovimiento().getPosicion().getCoorX() == 8) {
                         return true;
-                        
-                    }   break;
+
+                    }
+                    break;
                 default:
                     break;
             }
@@ -702,14 +706,12 @@ public class AgenteTablero extends Agent {
         mensaje.setOntology(ontology.getName());
         try {
             manager.fillContent(mensaje, ganador);
-            Iterator<Subscription> Iterator = suscripciones.get(partida.getIdPartida()).iterator();
-            if (suscripciones.get(partida.getIdPartida()).contains(partida.getIdPartida())) {
-                for (int i = 0; i < suscripciones.get(partida.getIdPartida()).size(); i++) {
-                    while (Iterator.hasNext()) {
-                        Iterator.next().notify(mensaje);
-                    }
-                }
+            Iterator<Subscription> iterador = suscripciones.get(partida.getIdPartida()).iterator();
+            while (iterador.hasNext()) {
+                Subscription suscripcion = iterador.next();
+                suscripcion.notify(mensaje);
             }
+
         } catch (Exception err) {
             err.printStackTrace();
         }
