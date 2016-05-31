@@ -65,6 +65,7 @@
     <Component class="javax.swing.JButton" name="btnStart">
       <Properties>
         <Property name="text" type="java.lang.String" value="Jugar"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="btnStartMousePressed"/>

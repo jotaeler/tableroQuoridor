@@ -22,8 +22,8 @@ import juegosTablero.elementos.Jugador;
 import juegosTablero.elementos.Posicion;
 
 /**
- *
- * @author hacker
+ *  Esta clase es la encargada de mostrar la interfaz del tablero
+ * @author jalr0005
  */
 public class GUI extends javax.swing.JFrame {
     //private final AgenteTablero myAgent;
@@ -33,9 +33,10 @@ public class GUI extends javax.swing.JFrame {
     ContentManager manager;
 
     /**
-     * Creates new form GUI
+     * Crea una nueva ventana de tablero
+     * 
      */
-    public GUI(ContentManager _manager) {
+    public GUI() {
         grid = new GridBagLayout();
         initComponents();
         addComponentsToPane();
@@ -45,9 +46,11 @@ public class GUI extends javax.swing.JFrame {
         panelJugador2.setEnabled(false);
         panelJugador3.setEnabled(false);
         panelJugador4.setEnabled(false);
-        manager = _manager;
     }
-
+    
+    /**
+     * Añade a la ventana las imagenes que forman el tablero
+     */
     public void addComponentsToPane() {
 
         panelTablero.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
@@ -78,7 +81,6 @@ public class GUI extends javax.swing.JFrame {
                         label.setText("");
                     }
                     labels[i][j] = label;
-                    //labels[i][j].setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
                     c.fill = GridBagConstraints.HORIZONTAL;
                     c.gridx = i;
                     c.gridy = j;
@@ -93,7 +95,6 @@ public class GUI extends javax.swing.JFrame {
                         label = new JLabel(separacionH);
                     }
                     labels[i][j] = label;
-                    //labels[i][j].setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
                     c.fill = GridBagConstraints.HORIZONTAL;
                     c.gridx = i;
                     c.gridy = j;
@@ -379,37 +380,14 @@ public class GUI extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-//    public static void main(String args[]) {
-//        /* Set the Nimbus look and feel */
-//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-//         */
-//        try {
-//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-//                if ("Nimbus".equals(info.getName())) {
-//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//                    break;
-//                }
-//            }
-//        } catch (ClassNotFoundException ex) {
-//            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (InstantiationException ex) {
-//            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (IllegalAccessException ex) {
-//            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-//            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        //</editor-fold>
-//
-//        /* Create and display the form */
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                new GUI().setVisible(true);
-//            }
-//        });
-//    }
+    
+    /**
+     * Recibe un movimiento realizado por un jugador y la casilla anterior en la que se encontraba.
+     * Cambia la ficha a la posicion indicada en movimientoRealizado y en la posicion
+     * anterior coloca la imagen de la casilla vacia.
+     * @param _m MovimientoRealizado movimiento realizado por el jugador
+     * @param _posAnterior Casilla del tablero en la que se encontraba el jugador antes de moverse
+     */
     public void representarMovimiento(MovimientoRealizado _m, Casilla _posAnterior) {
         try {
             Movimiento mov = _m.getMovimiento();
@@ -469,7 +447,12 @@ public class GUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-
+    
+    /**
+     * Cambia las imagenes de las casillas en las que estarán los jugadores al inicio del juego
+     * de la casilla vacia a la imagen de la ficha
+     * @param _c Posiciones de los jugadores
+     */
     public void cargaFichas(ArrayList<Casilla> _c) {
         URL url;
         String path = null;

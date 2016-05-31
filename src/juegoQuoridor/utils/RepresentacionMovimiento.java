@@ -9,8 +9,9 @@ import juegoQuoridor.elementos.MovimientoRealizado;
 import juegosTablero.elementos.Posicion;
 
 /**
- *
- * @author hacker
+ * Cuando se realiza un movmiento necesitamos la posicion anterior para quitar la ficha
+ * de la misma, para eso utilizamos esta clase.
+ * @author jalr0005
  */
 public class RepresentacionMovimiento {
     

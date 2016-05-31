@@ -8,15 +8,16 @@ package juegoQuoridor.GUI;
 import juegoQuoridor.agentes.AgenteTablero;
 
 /**
- *
- * @author hacker
+ *  Crea la interfaz inicial del juego donde se dará comienzo al mismo
+ * @author jalr0005
  */
 public class Quoridor extends javax.swing.JFrame {
     
     AgenteTablero agenteTablero;
     
     /**
-     * Creates new form Quoridor
+     * Crea una ventana con opciones para iniciar una partida
+     * @param _at Agente tablero al que pertenece la interfaz
      */
     public Quoridor(AgenteTablero _at) {
         initComponents();
@@ -43,6 +44,7 @@ public class Quoridor extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         btnStart.setText("Jugar");
+        btnStart.setEnabled(false);
         btnStart.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 btnStartMousePressed(evt);
@@ -103,7 +105,10 @@ public class Quoridor extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    /**
+     * Da comienzo a la partida
+     * @param evt 
+     */
     private void btnStartMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMousePressed
         int jugadores=2;
         if(boton_4_jugadores.isSelected()){
@@ -111,11 +116,15 @@ public class Quoridor extends javax.swing.JFrame {
         }
         agenteTablero.empezarPartida(jugadores);
     }//GEN-LAST:event_btnStartMousePressed
-
+    
     private void boton_4_jugadoresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boton_4_jugadoresActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_boton_4_jugadoresActionPerformed
-
+    
+    /**
+     * Lanza un metodo del agente tablero que mostrara la ventana de ranking
+     * @param evt 
+     */
     private void btnRankingMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRankingMousePressed
         agenteTablero.enviarRanking();
     }//GEN-LAST:event_btnRankingMousePressed
@@ -123,8 +132,13 @@ public class Quoridor extends javax.swing.JFrame {
     private void btnRankingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRankingActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnRankingActionPerformed
-
-
+    /**
+     * habilita o deshabilita el boton de jugar
+     * @param _enabled boolean
+     */
+    public void setEnabledJugar(boolean _enabled){
+        btnStart.setEnabled(_enabled);
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton boton_2_jugadores;
     private javax.swing.JRadioButton boton_4_jugadores;
