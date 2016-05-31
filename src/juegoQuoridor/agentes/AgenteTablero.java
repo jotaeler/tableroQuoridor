@@ -646,11 +646,11 @@ public class AgenteTablero extends Agent {
     public boolean ComprobarGanarPartida(MovimientoRealizado movimiento, String idPartida) {
         if (partidas.get(idPartida).getJugadores().size() == 2) {
             if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
-                if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
+                if (movimiento.getMovimiento().getPosicion().getCoorX()==8) {
                     return true;
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
-                if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
+                if (movimiento.getMovimiento().getPosicion().getCoorX()==0) {
                     return true;
 
                 }
@@ -658,7 +658,7 @@ public class AgenteTablero extends Agent {
 
         } else if (partidas.get(idPartida).getJugadores().size() == 4) {
             if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
-                if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
+                if (movimiento.getMovimiento().getPosicion().getCoorX()==8) {
                     return true;
 
                 }
@@ -668,12 +668,12 @@ public class AgenteTablero extends Agent {
 
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
-                if (movimiento.getMovimiento().getPosicion().getCoorX() == 8) {
+                if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
                     return true;
 
                 }
             } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
-                if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY()==8) {
                     return true;
 
                 }
