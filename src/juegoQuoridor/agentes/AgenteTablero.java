@@ -39,7 +39,6 @@ import java.util.Vector;
 import java.util.ArrayList;
 import java.util.Iterator;
 import juegoQuoridor.GUI.GUI;
-import juegoQuoridor.GUI.Ganador;
 import juegoQuoridor.GUI.Quoridor;
 import juegoQuoridor.GUI.Ranking;
 import juegoQuoridor.elementos.FichaEntregada;
@@ -69,7 +68,6 @@ public class AgenteTablero extends Agent {
     private Map<String, GUI> interfazTablero = new HashMap<String, GUI>();
     private Quoridor interfazInicio;
     private Ranking interfazRanking;
-    private Ganador interfazGandor;
 
     /**
      * Estructura para guardar el ranking
@@ -404,42 +402,42 @@ public class AgenteTablero extends Agent {
                                 JugadorRanking jr = new JugadorRanking(msg.getSender());
                                 jr.incrementarPartidaGanada();
                                 partidasGanadas.add(jr);
-                             
+
                             }
-                            mostrarGanador();
+                            //mostrarGanador();
                             GanadorPartida(movimiento.getJugador(), partidas.get(idPartidaPI).getPartida());
+                        } else {
+
+                            Casilla casilla = null;
+
+                            casilla = partidas.get(idPartidaPI).getPosicionJugador(msg.getSender());
+                            //Paso el movimiento al tablero
+                            Posicion p = new Posicion(casilla.getX(), casilla.getY());
+
+                            partidas.get(idPartidaPI).setPosicionJugador(msg.getSender(), x, y);
+
+                            RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
+                            movimientosRealizados.addLast(rm);
+
+                            //Reinicio el comportamiento
+                            //Nuevo mensaje con el movimiento realizado
+                            mensajeNuevo = new ACLMessage(ACLMessage.PROPOSE);
+                            mensajeNuevo.setLanguage(codec.getName());
+                            mensajeNuevo.setOntology(ontology.getName());
+                            mensajeNuevo.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+                            mensajeNuevo.setSender(getAID());
+
+                            //Envio el mensaje a todos los jugadores
+                            jugadores = partidas.get(idPartidaPI).getJugadores();
+                            for (int i = 0; i < jugadores.size(); i++) {
+                                mensajeNuevo.addReceiver(jugadores.get(i).getAgenteJugador());
+                            }
+                            Jugador jugadorActivo = partidas.get(idPartidaPI).getSiguienteTurno();
+                            Partida partida = partidas.get(idPartidaPI).getPartida();
+                            JugarPartida jugarpartida = new JugarPartida(partida, movimiento.getMovimiento(), jugadorActivo);
+                            manager.fillContent(mensajeNuevo, new Action(getAID(), jugarpartida));
+                            reset(mensajeNuevo);
                         }
-
-                        Casilla c = new Casilla(x, y);
-                        Casilla casilla = null;
-
-                        casilla = partidas.get(idPartidaPI).getPosicionJugador(msg.getSender());
-                        //Paso el movimiento al tablero
-                        Posicion p = new Posicion(casilla.getX(), casilla.getY());
-
-                        partidas.get(idPartidaPI).setPosicionJugador(msg.getSender(), x, y);
-
-                        RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
-                        movimientosRealizados.addLast(rm);
-
-                        //Reinicio el comportamiento
-                        //Nuevo mensaje con el movimiento realizado
-                        mensajeNuevo = new ACLMessage(ACLMessage.PROPOSE);
-                        mensajeNuevo.setLanguage(codec.getName());
-                        mensajeNuevo.setOntology(ontology.getName());
-                        mensajeNuevo.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
-                        mensajeNuevo.setSender(getAID());
-
-                        //Envio el mensaje a todos los jugadores
-                        jugadores = partidas.get(idPartidaPI).getJugadores();
-                        for (int i = 0; i < jugadores.size(); i++) {
-                            mensajeNuevo.addReceiver(jugadores.get(i).getAgenteJugador());
-                        }
-                        Jugador jugadorActivo = partidas.get(idPartidaPI).getSiguienteTurno();
-                        Partida partida = partidas.get(idPartidaPI).getPartida();
-                        JugarPartida jugarpartida = new JugarPartida(partida, movimiento.getMovimiento(), jugadorActivo);
-                        manager.fillContent(mensajeNuevo, new Action(getAID(), jugarpartida));
-                        reset(mensajeNuevo);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -610,14 +608,6 @@ public class AgenteTablero extends Agent {
     }
 
     /**
-     * Método para mostrar la ventana de ganador
-     */
-    public void mostrarGanador() {
-        interfazGandor = new Ganador();
-        interfazGandor.setVisible(true);
-    }
-
-    /**
      * Método para ver si el jugador ya ha jugado antes la partida
      *
      * @param j AID del jugador
@@ -655,40 +645,43 @@ public class AgenteTablero extends Agent {
      * @return true en caso de que exista ganador, fasle si no existe
      */
     public boolean ComprobarGanarPartida(MovimientoRealizado movimiento, String idPartida) {
-        if (partidas.get(idPartida).getJugadores().size() == 2) {
-            if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
-                if (movimiento.getMovimiento().getPosicion().getCoorX()==8) {
+        if (partidas.get(idPartida).getPartida().getNumeroJugadores() == 2) {
+            if (movimiento.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
+
                     return true;
                 }
-            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
-                if (movimiento.getMovimiento().getPosicion().getCoorX()==0) {
+            } else if (movimiento.getJugador().getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2)) {
+                if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
                     return true;
 
                 }
             }
 
-        } else if (partidas.get(idPartida).getJugadores().size() == 4) {
-            if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1) {
-                if (movimiento.getMovimiento().getPosicion().getCoorX()==8) {
-                    return true;
-
-                }
-            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2) {
-                if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
-                    return true;
-
-                }
-            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3) {
-                if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
-                    return true;
-
-                }
-            } else if (movimiento.getJugador().getFicha().getColor() == juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4) {
-                if (movimiento.getMovimiento().getPosicion().getCoorY()==8) {
-                    return true;
-
-                }
-
+        } else if (partidas.get(idPartida).getPartida().getNumeroJugadores() == 4) {
+            switch (movimiento.getJugador().getFicha().getColor()) {
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1:
+                    if (movimiento.getMovimiento().getPosicion().getCoorY() == 8) {
+                        return true;
+                        
+                    }   break;
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_2:
+                    if (movimiento.getMovimiento().getPosicion().getCoorX() == 0) {
+                        return true;
+                        
+                    }   break;
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_3:
+                    if (movimiento.getMovimiento().getPosicion().getCoorY() == 0) {
+                        return true;
+                        
+                    }   break;
+                case juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4:
+                    if (movimiento.getMovimiento().getPosicion().getCoorX() == 8) {
+                        return true;
+                        
+                    }   break;
+                default:
+                    break;
             }
 
         }
@@ -705,6 +698,8 @@ public class AgenteTablero extends Agent {
     public void GanadorPartida(Jugador j, Partida partida) {
         GanadorPartida ganador = new GanadorPartida(j, partida);
         ACLMessage mensaje = new ACLMessage(ACLMessage.INFORM);
+        mensaje.setLanguage(codec.getName());
+        mensaje.setOntology(ontology.getName());
         try {
             manager.fillContent(mensaje, ganador);
             Iterator<Subscription> Iterator = suscripciones.get(partida.getIdPartida()).iterator();
