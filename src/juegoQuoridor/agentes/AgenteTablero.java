@@ -109,8 +109,15 @@ public class AgenteTablero extends Agent {
              */
             public boolean register(Subscription suscripcion) {
                 try {
-
-                    suscripciones.get(((GanadorPartida) manager.extractContent(suscripcion.getMessage())).getPartida().getIdPartida()).add(suscripcion);
+                    ArrayList<Subscription> suscripcionesPartida=suscripciones.get(((GanadorPartida) manager.extractContent(suscripcion.getMessage())).getPartida().getIdPartida());
+                    if(suscripcionesPartida != null){
+                        suscripcionesPartida.add(suscripcion);
+                    }else{
+                        suscripcionesPartida=new ArrayList<>();
+                        suscripcionesPartida.add(suscripcion);
+                        suscripciones.put(((GanadorPartida) manager.extractContent(suscripcion.getMessage())).getPartida().getIdPartida(), suscripcionesPartida);
+                    }
+                    
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -169,9 +176,13 @@ public class AgenteTablero extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-
+        
+        MessageTemplate subcription = SubscriptionResponder.createMessageTemplate(ACLMessage.SUBSCRIBE);
+        
+        
         //Añadir las tareas principales
         addBehaviour(new BuscarAgentes(this, 15000));
+        addBehaviour(new HacerSuscripcion(this, subcription, gestor));
 
     }
 
@@ -298,7 +309,6 @@ public class AgenteTablero extends Agent {
                         int pos = jugadorR.getPosicionAceptados();
                         try {
                             if (iCase2 < 2) {
-                                System.out.println("it vale: " + iCase2);
                                 Ficha f = partidas.get(idPartidaCN).getSiguienteFicha();
                                 manager.fillContent((ACLMessage) aceptados.get(pos), new FichaEntregada(f));
                                 responder.add(aceptados.get(pos));
@@ -406,19 +416,21 @@ public class AgenteTablero extends Agent {
                             }
                             //mostrarGanador();
                             GanadorPartida(movimiento.getJugador(), partidas.get(idPartidaPI).getPartida());
-                        } else {
-
-                            Casilla casilla = null;
-
-                            casilla = partidas.get(idPartidaPI).getPosicionJugador(msg.getSender());
                             //Paso el movimiento al tablero
+                            Casilla casilla = partidas.get(idPartidaPI).getPosicionJugador(msg.getSender());
                             Posicion p = new Posicion(casilla.getX(), casilla.getY());
-
-                            partidas.get(idPartidaPI).setPosicionJugador(msg.getSender(), x, y);
-
                             RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
                             movimientosRealizados.addLast(rm);
-
+                            partidas.get(idPartidaPI).setPosicionJugador(msg.getSender(), x, y);
+                        } else {
+                            
+                            //Paso el movimiento al tablero
+                            Casilla casilla = partidas.get(idPartidaPI).getPosicionJugador(msg.getSender());
+                            Posicion p = new Posicion(casilla.getX(), casilla.getY());
+                            RepresentacionMovimiento rm = new RepresentacionMovimiento(movimiento, p);
+                            movimientosRealizados.addLast(rm);
+                            partidas.get(idPartidaPI).setPosicionJugador(msg.getSender(), x, y);
+                            
                             //Reinicio el comportamiento
                             //Nuevo mensaje con el movimiento realizado
                             mensajeNuevo = new ACLMessage(ACLMessage.PROPOSE);
@@ -711,6 +723,7 @@ public class AgenteTablero extends Agent {
                 Subscription suscripcion = iterador.next();
                 suscripcion.notify(mensaje);
             }
+            System.out.println("Fin de la partida");
 
         } catch (Exception err) {
             err.printStackTrace();
