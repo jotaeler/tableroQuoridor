@@ -406,7 +406,8 @@ public class AgenteTablero extends Agent {
                                 partidasGanadas.add(jr);
                              
                             }
-                             GanadorPartida(movimiento.getJugador(), partidas.get(idPartidaPI).getPartida());
+                            mostrarGanador();
+                            GanadorPartida(movimiento.getJugador(), partidas.get(idPartidaPI).getPartida());
                         }
 
                         Casilla c = new Casilla(x, y);
