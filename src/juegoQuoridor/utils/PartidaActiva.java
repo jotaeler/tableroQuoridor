@@ -13,17 +13,24 @@ import juegosTablero.elementos.Jugador;
 import juegosTablero.elementos.Partida;
 
 /**
- *
- * @author Hacker
+ *  Esta clase nos ayuda a gestionar las partidas guardando la informacion de cada una.
+ * @author jalr0005
  */
 public class PartidaActiva {
-
+    
     private Partida partida;
+    //Array con las posiciones en cada momento de los jugadores
     private ArrayList<Casilla> posJugador;
     private ArrayList<Jugador> jugadores;
+    //Fichas disponibles (todas al empezar la partida)
     private LinkedList<Ficha> fichasDisponibles;
+    //Variable incremental para gestionar los turnos
     private int turno = 0;
-
+    
+    /**
+     * Recibe un objeto partida y añade las 4 fichas como disponibles
+     * @param _partida 
+     */
     public PartidaActiva(Partida _partida) {
         posJugador = new ArrayList<Casilla>();
         partida = _partida;
@@ -36,10 +43,13 @@ public class PartidaActiva {
         fichasDisponibles.add(new Ficha(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_4));
 
     }
-
+    
+    /**
+     * Redibe un array con los jugadores y les asigna una casilla del tablero segun el color de su ficha
+     * @param _jugadores 
+     */
     public void setJugadores(ArrayList<Jugador> _jugadores) {
         if (_jugadores.size() == 2) {
-            System.out.println("PartidaActiva setJugadores - 2 jugadores");
             for (Jugador _jugador : _jugadores) {
                 jugadores.add(_jugador);
                 if (_jugador.getFicha().getColor().equals(juegoQuoridor.OntologiaQuoridor.COLOR_FICHA_1)) {
@@ -75,7 +85,12 @@ public class PartidaActiva {
             }
         }
     }
-
+    
+    /**
+     * Dado el identificador del jugador devolvemos la casilla en la que se encuentra
+     * @param _jugador
+     * @return Casilla en la que se encuentra el jugador
+     */
     public Casilla getPosicionJugador(AID _jugador) {
         Casilla r = null;
         for (Casilla pos : posJugador) {
@@ -86,7 +101,13 @@ public class PartidaActiva {
         }
         return r;
     }
-
+    
+    /**
+     * Cambia la posicion de un jugador, este metodo se llama cuando un jugador hace un movimiento
+     * @param _jugador
+     * @param x
+     * @param y 
+     */
     public void setPosicionJugador(AID _jugador, int x, int y) {
         for (Casilla pos : posJugador) {
             if (pos.getJugador().getAgenteJugador().equals(_jugador)) {
@@ -94,22 +115,37 @@ public class PartidaActiva {
             }
         }
     }
-
+    
+    /**
+     * Para saber a que jugador le toca y mandarle el turno utilizamos este metodo
+     * @return 
+     */
     public Jugador getSiguienteTurno() {
         Jugador j = posJugador.get(turno % partida.getNumeroJugadores()).getJugador();
-        System.out.println("Hay "+posJugador.size()+" jugadores en la PARTIDA ACTIVA");
         turno++;
         return j;
     }
-
+    
+    /**
+     * 
+     * @return lista de jugadores
+     */
     public ArrayList<Jugador> getJugadores() {
         return jugadores;
     }
-
+    
+    /**
+     * Devuelve la siguiente ficha a asignar a un jugador
+     * @return ficha
+     */
     public Ficha getSiguienteFicha() {
         return fichasDisponibles.pollFirst();
     }
-
+    
+    /**
+     * 
+     * @return partida
+     */
     public Partida getPartida() {
         return partida;
     }
@@ -120,7 +156,11 @@ public class PartidaActiva {
     public ArrayList<Casilla> getPosJugadores() {
         return posJugador;
     }
-
+    
+    /**
+     * Añade al array de posiciones de jugador la casilla
+     * @param casilla 
+     */
     public void setposJugador(Casilla casilla) {
         posJugador.add(casilla);
     }

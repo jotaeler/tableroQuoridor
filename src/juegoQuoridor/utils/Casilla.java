@@ -8,8 +8,8 @@ package juegoQuoridor.utils;
 import juegosTablero.elementos.Jugador;
 
 /**
- *
- * @author Hacker
+ *  Clase para representar objetos casilla del tablero.
+ * @author jalr0005
  */
 public class Casilla {
     private int x;
@@ -92,6 +92,11 @@ public class Casilla {
     public void setY(int y) {
         this.y = y;
     }
+    /**
+     * 
+     * @param x
+     * @param y 
+     */
     public void setXY(int x, int y) {
         this.x = x;
         this.y = y;
